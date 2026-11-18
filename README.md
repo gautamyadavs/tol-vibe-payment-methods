@@ -1,4 +1,4 @@
-# Smart Spending: Payment Trade-Offs & Cash Liquidity
+# Smart Spending: Comparing Payment Methods for First-Year College Students
 
 **Course:** CMU 05-840 — Tools for Online Learning (Spring 2027, Tool Task 3 Demo #1)  
 **Track:** Track A — Adaptive Mastery, Graduated Scaffolding, & Fading  
@@ -9,57 +9,58 @@
 
 ## Overview
 
-First-year college students frequently enter campus life with a single brittle rule of thumb—*"debit is always safer because it spends money I already have."* That heuristic breaks down as soon as scheduled automated clearing house (ACH) bills, automated fuel-pump pre-authorization holds, unverified online resale checkouts, or group dining splits collide.
+First-year college students frequently enter campus life relying on one overgeneralized rule of thumb—*"debit is always safer because it spends money I already have."* That rule breaks down when overnight automatic bills, `$125` automated gas-pump debit holds, unverified online listings, or group restaurant splits collide.
 
-This static web application replicates the domain content and exact four learning objectives of Miina Koyama's Spring 2026 Articulate Rise 360 course and extends them through **Track A (Adaptive Mastery, Graduated Scaffolding, & Fading)**. Using pure Vanilla HTML5, CSS3, and ES6+ JavaScript governed by [`AGENTS.md`](./AGENTS.md), it replaces Rise 360's stateless sorting cards and static branching slides with a shared misconception state machine, a live multi-step numerical account ledger, contingent 3-level hints, targeted remediation micro-tasks, and explicit Stage 3 scaffold fading.
-
----
-
-## Carried-Over Learning Objectives
-
-- **LO1:** Compare debit cards, credit cards, and mobile payment apps in real-life college scenarios.
-- **LO2:** Evaluate payment methods across four trade-off dimensions: cost/fees, convenience, security/fraud protection, and budgeting/liquidity control.
-- **LO3:** Recognize how psychological factors (pain of paying, deferred payment illusion, reward-point chasing) influence spending choices.
-- **LO4:** Apply multi-step payment decision strategies to protect cash liquidity and avoid overdraft fees.
+This static web application faithfully recreates the **Articulate Rise 360 Classic (`#FF631E`)** visual shell, friendly peer voice, campus photography, and Carlos scenario cast of **Miina Koyama's Spring 2026 course**, while extending its instructional engine through **Track A (Adaptive Mastery, Graduated Scaffolding, & Fading)** and **Mayer's Multimedia Learning Principles**. Built with zero-dependency Vanilla HTML5, CSS3, and ES6+ JavaScript governed by [`AGENTS.md`](./AGENTS.md), it upgrades Rise 360's stateless sorting cards and branching slides with live cash-flow wallets, diagnostic non-giveaway feedback, 3-level graduated hints, in-stage Worked Contrast Quick-Fixes, and Lesson 4 scaffold fading.
 
 ---
 
-## Overcoming Articulate Rise 360 Constraints (Track A Architecture)
+## Carried-Over Learning Objectives (`LO1`–`LO4`)
 
-| Pedagogical Dimension | Baseline S26 Rise 360 Authoring Constraint | Custom Vibe-Coded Track A Implementation |
+1. **LO1:** Compare debit cards, credit cards, and mobile payment apps in everyday college scenarios.
+2. **LO2:** Evaluate payment methods across four trade-off dimensions: cost & fees, convenience, security/fraud protection, and budgeting/liquidity control.
+3. **LO3:** Recognize how psychological factors (*pain of paying*, deferred payment, and reward-point chasing) influence spending choices.
+4. **LO4:** Apply multi-step payment decision strategies to protect checking cash liquidity and avoid `$35` overdraft fees.
+
+---
+
+## Overcoming Articulate Rise 360 Authoring Constraints (Track A + Mayer Alignment)
+
+| Lesson & Mayer Principle | S26 Rise 360 Baseline Limitation | Custom Track A Implementation |
 | :--- | :--- | :--- |
-| **Relational Trade-Off Classification (`LO1`–`LO3`)** | **Sorting Blocks** only snap a card into a single bucket with binary right/wrong bounce-back; cannot verify *why* a student picked a payment method. | **Stage 1: Scenario Trade-Off Classifier** requires joint selection of *Payment Method × Primary Trade-Off Factor* across 4 scenarios, diagnosing right-tool/wrong-reason guesses without revealing the answer on Attempt 1. |
-| **Multi-Step Cash Liquidity (`LO4`)** | **Scenario Blocks** branch between pre-written text slides with zero numeric state memory across decisions. | **Stage 2: Spring Break Liquidity Simulation** binds Carlos's 3 sequential choices (`$200` hotel site, `$100` group dinner, `$80` highway gas pump with `$125` debit hold) to a live **Account & Risk Ledger** (`$240` Checking, `$120` 6:00 AM auto-debit, `$35` overdraft rule). |
-| **Contingent Hints & Misconception Repair** | Knowledge checks return static feedback per item; errors never accumulate across blocks to trigger targeted instruction. | Every step offers **3-Level Graduated Hints** (Metacognitive → Conceptual → Concrete Check). Tracking `liquidity_blindness`, `fraud_exposure`, and `reward_chasing` across Stages 1–2 routes learners with `>= 2` errors or a Stage 2 overdraft/fraud event into a **Targeted Remediation Micro-Task**. |
-| **Graduated Fading for Transfer** | Blocks look visually identical from top to bottom of a lesson, creating prompt dependency (*the assistance dilemma*). | **Stage 3: Faded Transfer ("Campus Move-In Week")** strips *channeling* context badges, *focusing* `Net Safe Checking` subtraction rows, and pre-highlighted auto-pay banners so learners manage Maya's `$210` Checking & `$130` 11:59 PM utility draft on a realistic raw bank view. |
-| **Instructional Transparency** | Pedagogical rationale lives outside the deployed artifact in separate design docs. | Top-bar **`Learning Engineer View`** toggle (`aria-pressed`) reveals inline LXD callouts, live state telemetry, and one-click previews for all 3 Remediation Micro-Tasks and locked stages. |
+| **1. How Payment Choices Work** *(Pre-Training, Multimedia, Segmenting)* | Static tabs and flip cards do not connect cleanly into downstream scenario state. | Preserves Miina's **4-Factor Tabs** + **3 Psychology Flip Flashcards** behind progressive Rise `CONTINUE` dividers (`Lato` + `Merriweather`) with concise 2-sentence explanations paired with campus photography. |
+| **2. Match Payment to Scenario** *(Segmenting, Spatial Contiguity, Signaling)* | Rise Sorting Blocks bounce cards back with binary right/wrong motion and cannot diagnose *why* a student picked a bucket or offer graduated hints. | Presents Miina's **5 sorting scenarios one card at a time** inside a single desktop viewport above 3 target buckets (`Debit Card`, `Credit Card`, `Mobile Payment`), delivering immediate non-giveaway misconception feedback + `Need a Hint? (0/3)`. |
+| **3. Spring Break Money Moves** *(Embodiment, Spatial Contiguity, Adaptive Remediation)* | Rise Scenario Blocks branch between static text slides with zero live numeric memory across Carlos's decisions. | Pins Carlos's **Live Wallet Bar** (`Checking Cash: $240`, `Credit: $0`, `⚠️ Tomorrow 6 AM Auto-Pay: $120`, `Overdraft Fees: $0`) directly inside the top of the visual stage alongside Carlos's 8 character poses (`carlos-*.png`) and 5 scene photos (`scene-*.jpg`). Any `$35` overdraft, unverified-seller cash exposure, or repeated misconception pauses Carlos (`carlos-thinking.png`) for a **1-question Worked Contrast Quick-Fix** before step revision. |
+| **4. Solo Challenge: Move-In Week** *(Track A Structural Fading)* | Rise blocks maintain identical visual cues from start to finish, risking prompt dependency. | Maya's 3-step transfer challenge (`$210` Checking, `$130` 11:59 PM electric utility draft noted once in her planner brief) **fades out** the `⚠️ Auto-Pay` wallet warning pill and context-signal badges into a realistic raw bank view solvable in `< 90 seconds`. |
+| **Coherence Principle (`0%` Learner Meta-Clutter)** | Academic/demo prototypes often clutter the learner screen with course rubrics and state debuggers. | Moves 100% of CMU 05-840 notes, Mayer audit documentation, live misconception telemetry, and grading jump/preview buttons into a discreet slide-over **`⚙️ LXD & Mayer Notes`** drawer. |
 
 ---
 
-## Corrective Prompt Iteration Log (Steering Naive AI Output Toward Learning Science)
+## Corrective Prompt Iteration Log (Including Mayer's Multimedia Audit Rebuild)
 
-| Iteration | Naive AI Output / Failure Mode | Corrective Prompt & `AGENTS.md` Constraint Applied | Learning Science Rationale |
+| Iteration | Failure Mode Diagnosed | Corrective Engineering & `AGENTS.md` Guardrail | Learning Science Rationale |
 | :--- | :--- | :--- | :--- |
-| **1. Diagnostic Assessment vs. Answer Giveaways** | Initial AI generation produced standard 4-option multiple-choice items with binary `"Incorrect! The right answer is Credit Card"` banners on Attempt 1, plus gamified streak badges and confetti bursts. | Enforced 3-option joint selection (*Method + Primary Trade-Off*) per Haladyna & Rodriguez (2013), banned Attempt-1 answer disclosure, stripped streak/confetti chrome, and mapped all wrong pairs to causal misconception diagnostics (`liquidity_blindness`, `fraud_exposure`, `reward_chasing`). | Immediate answer giveaways convert active retrieval into passive reading and invite shallow clicking (Shute, 2008); seductive gamified details add extraneous cognitive load (Mayer, 2009). |
-| **2. Stateful Ledger & Remediation Gate vs. Isolated Slides** | Early simulation drafts treated Carlos's hotel, dinner, and gas stops as independent quiz screens where an earlier `$200` debit drain disappeared on the next step, and let learners brute-force retry buttons immediately. | Bound Steps 2.1–2.3 to a persistent `Account & Risk Ledger` (incorporating `$120` 6:00 AM auto-debit + `$125` automated pump debit hold) and added an adaptive mastery gate launching a worked-contrast **Targeted Remediation Micro-Task** whenever `totalErrors >= 2` or an overdraft/fraud risk occurs. | Liquidity management (`LO4`) is inherently cumulative; pairing worked financial contrasts with verification checks repairs the underlying *"debit is always safer"* schema before revision (Corbett & Anderson, 1995). |
-| **3. Explicit Scaffold Fading & Editorial Restraint** | AI kept identical `[Context Signal]` badges, pre-subtracted `Safe Spendable Checking` ledger rows, and bold auto-pay warning banners through the final challenge, styled with dark-mode gradients and colored left-border stripes. | Created Stage 3 (*Campus Move-In Week*: `$210` Checking, `$130` 11:59 PM utility draft) to remove *channeling* tags, *focusing* buffer math, and warning banners once Stages 1–2 are mastered, and refactored CSS to a `#FAF9F6` warm-paper editorial sheet with uniform `1px` borders. | Fading channeling and focusing scaffolds (Pea, 2004; Puntambekar & Hübscher, 2005) prevents prompt dependency and tests ecologically valid transfer against real mobile bank statements that omit pending overnight ACH bills. |
+| **1. Diagnostic Feedback vs. Attempt-1 Giveaways** | Early AI drafts used standard multiple-choice items with binary `"Incorrect! Choose Credit Card"` banners on Attempt 1 plus gamified streak chrome. | Enforced non-giveaway causal explanations on Attempt 1, mapped suboptimal choices to `liquidity_blindness`, `fraud_exposure`, and `reward_chasing`, and added 3-level graduated hints. | Answer giveaways turn retrieval practice into passive reading (Shute, 2008); contingent hints scaffold self-monitoring (Wood, Bruner, & Ross, 1976). |
+| **2. Stateful Wallet & Worked Contrast Remediation** | Treating hotel, dinner, and gas stops as isolated questions hid how early debit drains or `$125` fuel-pump holds collide with overnight auto-pay bills. | Connected Carlos's 3 scenes to a live wallet ledger (`$240` Checking, `$120` 6:00 AM auto-pay, `$125` pump hold) and added in-stage **Worked Contrast Quick-Fixes** before revision. | Cash-flow management (`LO4`) is cumulative; side-by-side naive vs. strategic contrasts repair brittle *"debit is always safer"* schemas. |
+| **3. Mayer's Multimedia Principles & Authentic Rise 360 Rebuild (v1 → v2)** | **v1 Audit Failures:** (1) Generic AI dashboard look (`#FAF9F6` cream + `JetBrains Mono` all-caps eyebrows); (2) **Coherence** violation from CMU/LXD meta-headers on the learner screen; (3) **Multimedia/Embodiment** violation with zero photos or character art; (4) **Segmenting/Spatial Contiguity** violation from stacking 4 dual-matrix forms (`24` radios) on one scrolling page; (5) **Personalization** violation from cold academic jargon. | Rebuilt the UI in Miina Koyama's authentic **Rise 360 (`#FF631E`)** two-column shell (`Lato` + `Merriweather`), integrated all 17 authentic campus/scene/Carlos assets in `assets/`, enforced strict 1-card-at-a-time single-viewport cards, pinned the wallet bar inside Carlos's stage, rewrote copy in warm peer voice, and isolated all instructor/CMU telemetry into the discreet `⚙️ LXD & Mayer Notes` drawer. | Eliminates extraneous cognitive load (**Coherence** & **Segmenting**), pairs verbal and visual channels (**Multimedia** & **Embodiment**), aligns related state & choices visually (**Spatial Contiguity**), and increases learner engagement through conversational tone (**Personalization**, Mayer, 2009). |
 
 ---
 
-## Repository Structure & Zero-Build Local Usage
+## Repository Structure & Local Usage
 
 ```text
 tol-vibe-payment-methods/
-├── .nojekyll      # Disables Jekyll processing for clean GitHub Pages static serving
-├── AGENTS.md      # 4-section pedagogical & technical steering specification
-├── README.md      # Project documentation, Rise 360 comparison, & prompt iteration log
-├── index.html     # Semantic HTML5 shell (single <h1>, ARIA live regions, LXD callouts)
-├── styles.css     # Warm academic-editorial design system (#FAF9F6 / #1E3A5F, zero tropes)
-└── app.js         # Pure Vanilla ES6+ stateful engine, ledger math, hints, & remediation
+├── .nojekyll      # Bypasses Jekyll processing on GitHub Pages
+├── AGENTS.md      # Pedagogical, Mayer multimedia, & technical specification
+├── README.md      # Course overview, Rise 360 comparison, & Mayer iteration log
+├── assets/        # Authentic campus photos, 5 scene backdrops, & 8 Carlos poses
+├── index.html     # Rise 360 two-column HTML5 shell + discreet LXD drawer
+├── styles.css     # Authentic Rise 360 (#FF631E, Lato + Merriweather) stylesheet
+└── app.js         # Vanilla ES6+ stateful course engine, wallets, hints, & Quick-Fixes
 ```
 
 ### Running Locally
-No `npm install`, bundler, or API key is required. Serve the directory with any static HTTP server or open `index.html` directly:
+No build step, package install, or API key is required:
 
 ```bash
 python3 -m http.server 8000

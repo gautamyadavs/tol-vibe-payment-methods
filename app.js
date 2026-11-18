@@ -1,2357 +1,2102 @@
 /* ==========================================================================
-   Smart Spending: Payment Trade-Offs & Cash Liquidity (app.js)
-   CMU 05-840 — Spring 2027, Tool Task 3 Demo #1 (Track A)
-   Pure Vanilla ES6+ Stateful Engine · Zero External Dependencies
+   Smart Spending: Comparing Payment Methods for First-Year College Students
+   Authentic Rise 360 UI + Mayer's Multimedia Principles + CMU 05-840 Track A
+   Pure Vanilla ES6+ JavaScript · Zero external libraries
    ========================================================================== */
 
 (function () {
-  "use strict";
+  'use strict';
+
+  const STORAGE_KEY = 'tol_smart_spending_rise_v2';
 
   /* ------------------------------------------------------------------------
-     1. Pedagogical Content & Diagnostic Matrices
+     1. Course Content & Pedagogical Data (Miina Koyama Peer Voice)
      ------------------------------------------------------------------------ */
 
-  const PAYMENT_METHODS = [
-    { id: "debit", label: "Debit Card", sub: "Direct Checking Pull" },
-    { id: "credit", label: "Credit Card", sub: "Statement Cycle / FCBA" },
-    { id: "p2p", label: "Mobile P2P App", sub: "Venmo / Cash App / Zelle" }
+  const LESSONS_META = [
+    { id: 1, navTitle: '1. How Payment Choices Work', headerTitle: 'Making Smart Choices: Comparing Payment Methods' },
+    { id: 2, navTitle: '2. Match Payment to Scenario', headerTitle: 'Match Payment to Scenario' },
+    { id: 3, navTitle: '3. Spring Break Money Moves', headerTitle: 'Spring Break Money Moves' },
+    { id: 4, navTitle: '4. Solo Challenge: Move-In Week', headerTitle: 'Solo Challenge: Move-In Week' }
   ];
 
-  const STAGE_1_ITEMS = [
+  const LESSON1_GOALS = [
+    'Compare debit cards, credit cards, and mobile payment apps in everyday college life.',
+    'Weigh four key trade-offs—cost & fees, convenience, security, and budgeting control—before you pay.',
+    'Spot how spending psychology (pain of paying, delayed bills, and reward points) nudges your wallet.',
+    'Plan multi-step payment moves so automatic bills never trigger a surprise $35 overdraft fee.'
+  ];
+
+  const TRADE_OFF_TABS = [
     {
-      id: "1",
-      stepLabel: "Scenario 1.1 · $145 Purchase",
-      scaffoldTag: "Context Signal: Unverified Online Resale Site",
-      title: "Concert Floor Tickets on an Unfamiliar Resale Website ($145)",
-      narrative:
-        "You find two last-minute concert tickets for $145 on an independent third-party resale site you have never used before. Checkout accepts a Debit Card, a Credit Card, or a direct Mobile P2P transfer to @IndieTixDrop.",
-      factors: [
-        { id: "fraud", label: "Fraud Protection", sub: "Dispute rights & cash shield" },
-        { id: "split", label: "Split Convenience", sub: "Instant peer settlement" },
-        { id: "pain", label: "Pain-of-Paying Control", sub: "Immediate spend friction" }
-      ],
-      correctMethod: "credit",
-      correctFactor: "fraud",
+      key: 'cost',
+      label: 'Cost & Fees',
+      badge: '💳 Watch Overdrafts & APR',
+      image: 'assets/cafe-payment-methods.jpg',
+      imageAlt: 'College students paying with phone and card at a campus cafe counter',
+      title: 'Cost & Fees: Free Until Timing Goes Wrong',
+      body: 'Debit cards and bank-linked payment apps cost $0 per swipe—unless an unexpected bill pushes your checking balance below zero and triggers a $35 overdraft fee. Credit cards charge $0 interest when you pay your statement in full each month, but carrying an unpaid balance adds steep 20%+ interest.',
+      example: 'Campus Example: A $15 debit lunch turns into a $50 lunch if an overnight auto-pay bill drops your checking account below $0.'
+    },
+    {
+      key: 'convenience',
+      label: 'Convenience',
+      badge: '📱 Fast Splits vs. Universal Checkout',
+      image: 'assets/student-options.jpg',
+      imageAlt: 'Student holding phone and payment card at a checkout counter',
+      title: 'Convenience: Peer Splits vs. Store Checkouts',
+      body: 'Mobile apps like Venmo or Zelle make splitting exact dollar shares with friends effortless in seconds. Credit and debit cards work at virtually every store register, travel website, and campus checkout without needing anyone’s phone handle.',
+      example: 'Campus Example: Venmo lets four roommates split a $48 airport rideshare into exact $12 shares before stepping out of the car.'
+    },
+    {
+      key: 'security',
+      label: 'Security',
+      badge: '🛡️ Whose Cash Is on the Line?',
+      image: 'assets/hero-student-card.jpg',
+      imageAlt: 'College student checking a payment card carefully at a laptop',
+      title: 'Security: Protecting Your Real Checking Cash',
+      body: 'Credit cards give you the strongest shield online—if an unfamiliar seller scams you, the card issuer’s money is disputed while your checking cash stays safe. Debit disputes can leave your own bank money tied up during investigation, and P2P apps like Zelle or Venmo offer almost zero refund protection with strangers.',
+      example: 'Campus Example: Sending Zelle to a stranger for concert tickets is like handing cash through a window—once sent, banks rarely pull it back.'
+    },
+    {
+      key: 'budgeting',
+      label: 'Budgeting Control',
+      badge: '📊 Real-Time Balance vs. Float',
+      image: 'assets/cafe-payment-methods.jpg',
+      imageAlt: 'Students studying and buying coffee at a sunny campus cafe',
+      title: 'Budgeting Control: Instant Honesty vs. Short-Term Breathing Room',
+      body: 'Debit pulls money from checking right away, making it easy to see your true grocery or coffee budget in real time. Credit cards bundle purchases onto next month’s bill—helpful for bridging a two-day gap before payday, as long as you track what you owe.',
+      example: 'Campus Example: Swiping debit for weekly groceries keeps snack spending honest when that food cash is already set aside.'
+    }
+  ];
+
+  const PSYCHOLOGY_CARDS = [
+    {
+      key: 'pain',
+      icon: '🧠',
+      title: 'Pain of Paying',
+      teaser: 'Why watching cash leave checking right now changes what you toss in your cart.',
+      explanation: 'Seeing $65 leave your checking balance right away creates a healthy mental pause before impulse buys. When you already have cash set aside for essentials like groceries, that immediate feedback helps you stick to your budget.'
+    },
+    {
+      key: 'deferred',
+      icon: '⏳',
+      title: 'Deferred Payment',
+      teaser: 'How “pay next month” can protect your bill cushion—or quietly snowball.',
+      explanation: 'Credit cards separate buying today from paying on your statement date, which can protect checking cash right before an automatic bill hits. Because your bank balance does not drop right away, though, small impulse swipes can sneak up fast.'
+    },
+    {
+      key: 'awareness',
+      icon: '🎯',
+      title: 'Spending Awareness',
+      teaser: 'Why chasing 2% cashback points on group tabs often backfires.',
+      explanation: 'Putting a whole $100 group dinner on credit just to earn $2 in reward points blurs what you actually spent. If even one busy friend forgets to Venmo you back $25, you lose way more than the points were worth.'
+    }
+  ];
+
+  const BUCKET_OPTIONS = [
+    { key: 'debit', icon: '🏧', title: 'Debit Card', sub: 'Pulls from checking now' },
+    { key: 'credit', icon: '💳', title: 'Credit Card', sub: 'Billed later · Fraud shield' },
+    { key: 'mobile', icon: '📲', title: 'Mobile Payment', sub: 'Instant P2P app split' }
+  ];
+
+  const SORTING_SCENARIOS = [
+    {
+      id: 's1',
+      signal: '🔍 Unfamiliar Online Travel Site',
+      prompt: 'You’re booking a $200 Spring Break hotel deposit on an unfamiliar travel website you found through a search ad.',
+      optimal: 'credit',
       hints: [
-        "Metacognitive Prompt: Ask yourself—if this unfamiliar seller never delivers valid ticket barcodes, whose money is missing while you dispute the charge?",
-        "Conceptual Trade-Off Cue (LO2): Compare how Regulation E (Debit), the Fair Credit Billing Act (Credit), and authorized push rules (Mobile P2P) treat non-delivery by an unknown merchant.",
-        "Concrete Protection Check: P2P transfers to strangers act like irreversible cash, and Debit disputes can freeze $145 of your actual Checking cash for up to 10 business days. Which method shields your bank cash while preserving chargeback rights?"
+        'Ask yourself: Do I fully trust this website yet, and whose money gets tied up if the listing turns out to be sketchy?',
+        'Peer-to-peer apps offer almost zero buyer protection, and debit disputes leave your real checking cash missing while your bank investigates.',
+        'Compare which option lets you dispute an unfamiliar online charge without pulling $200 out of your bank checking balance today.'
       ],
-      diagnose(method, factor) {
-        if (method === "credit" && factor === "fraud") {
-          return {
-            ok: true,
-            tone: "mastery",
-            title: "Verified Pairing · FCBA Chargeback & Cash Isolation",
-            body: "With an unverified online vendor, a Credit Card isolates your bank Checking balance: under the Fair Credit Billing Act (FCBA), the card issuer's funds—not your rent or grocery cash—remain on hold if you must dispute undelivered tickets."
-          };
-        }
-        if (method === "p2p") {
-          return {
-            ok: false,
-            misconceptions: ["fraud_exposure"],
-            tone: "alert",
-            title: "Diagnostic · Irreversible Authorized Push Risk",
-            body: "When you voluntarily tap 'Send' in a Mobile P2P App to an unknown seller, networks treat it like handing over physical bills—standard chargeback rights do not cover non-delivery scams. Consider which payment rail gives statutory merchant dispute protection without draining Checking."
-          };
-        }
-        if (method === "debit") {
-          return {
-            ok: false,
-            misconceptions: ["liquidity_blindness", "fraud_exposure"],
-            tone: "caution",
-            title: "Diagnostic · Bank Cash Freeze During Dispute",
-            body: "Even when a bank eventually reimburses unauthorized or disputed Debit claims under Regulation E, $145 of your real Checking cash is immediately deducted and can remain frozen for up to 10 business days during investigation. Re-evaluate how to insulate your Checking cash against an unfamiliar seller."
-          };
-        }
-        // Correct method (credit), wrong factor
-        return {
+      feedback: {
+        credit: {
+          ok: true,
+          head: 'Smart move — your checking cash stays protected!',
+          body: 'On an unfamiliar travel site, a Credit Card keeps your real bank balance untouched. If the listing turns out to be fake or double-charges you, Fair Credit Billing Act (FCBA) protection lets you dispute the charge on the issuer’s line instead of freezing $200 of your bill money.'
+        },
+        debit: {
           ok: false,
-          misconceptions: [],
-          tone: "caution",
-          title: "Diagnostic · Right Tool, Mismatched Trade-Off Mechanism",
-          body:
-            factor === "pain"
-              ? "A Credit Card actually lowers the immediate psychological 'pain of paying' rather than increasing budget friction. Look closely at the core risk of buying from an unfamiliar website—what specific protection is the card providing here?"
-              : "Paying a merchant checkout does not split a peer tab. Identify the exact legal and financial risk created by an unverified resale website."
-        };
+          misconception: 'fraud_exposure',
+          head: 'Watch what happens to your real bank cash',
+          body: 'Swiping a Debit Card pulls $200 straight out of checking immediately. If an unfamiliar travel site double-charges you or disappears, that $200 stays missing from your bank account while your bank investigates—which can bounce upcoming bills. Which option shields your actual checking cash during a dispute?'
+        },
+        mobile: {
+          ok: false,
+          misconception: 'fraud_exposure',
+          head: 'Careful — P2P transfers act like digital cash',
+          body: 'Sending $200 through a peer-to-peer Mobile Payment app to an unverified travel host has almost zero chargeback protection once you tap Send. Think about which payment method gives you strong dispute rights while keeping checking cash untouched.'
+        }
       }
     },
     {
-      id: "2",
-      stepLabel: "Scenario 1.2 · $48 Group Split ($12 Share)",
-      scaffoldTag: "Context Signal: Trusted Classmate Settlement",
-      title: "Splitting a $48 Campus Airport Rideshare with 3 Classmates",
-      narrative:
-        "You and three classmates share a $48 late-night rideshare back to your dorm ($12 each). Your friend's rideshare account already billed the trip, and everyone wants to settle their exact $12 share in the back seat without ATM fees or month-long IOUs.",
-      factors: [
-        { id: "fraud", label: "Fraud Protection", sub: "Chargeback & liability cap" },
-        { id: "split", label: "Split Convenience", sub: "Exact fee-free peer transfer" },
-        { id: "liquidity", label: "Cash Liquidity Buffer", sub: "Short-term statement float" }
-      ],
-      correctMethod: "p2p",
-      correctFactor: "split",
+      id: 's2',
+      signal: '👥 3 Trusted Friends · Exact $12 Split',
+      prompt: 'You and 3 college friends just shared a $48 rideshare to the airport and want to settle everyone’s exact $12 share before walking into the terminal.',
+      optimal: 'mobile',
       hints: [
-        "Metacognitive Prompt: Notice two features of this moment—you are paying a trusted classmate sitting beside you (not a store register), and the exact amount is $12.",
-        "Conceptual Trade-Off Cue (LO1/LO2): Merchant cards cannot swipe directly into a friend's checking account without fees, while ATMs dispense $20 bills and often charge out-of-network fees.",
-        "Concrete Cost & Friction Check: Linking a Mobile P2P App to your bank/balance transfers an exact $12 to a trusted peer for $0 fee in seconds. Pair that tool with the trade-off dimension that justifies using it here."
+        'Notice two clues here: you know and trust all three friends, and your real share of the ride is $12—not $48.',
+        'Unlike paying strangers online, peer-to-peer apps shine when splitting small exact amounts with friends right away so nobody carries unpaid IOUs.',
+        'Pick the option built for instant $0-fee peer splits so everyone settles their $12 share on the spot.'
       ],
-      diagnose(method, factor) {
-        if (method === "p2p" && factor === "split") {
-          return {
-            ok: true,
-            tone: "mastery",
-            title: "Verified Pairing · Fee-Free Peer Settlement",
-            body: "Because you know and trust the classmate sitting next to you, seller fraud risk is negligible; a bank-linked Mobile P2P transfer settles the exact $12 share instantly at $0 fee without ATM runs or forgotten IOUs."
-          };
-        }
-        if (method === "credit") {
-          return {
-            ok: false,
-            misconceptions: ["reward_chasing"],
-            tone: "caution",
-            title: "Diagnostic · P2P Credit Fee & Tab-Swapping Trap",
-            body: "Funding a peer transfer with a Credit Card typically triggers a ~3% fee (wiping out any 1%–2% points), and offering to 'just put the next dinner on my card for points' creates fuzzy IOUs that distort both budgets. Which tool settles an exact $12 peer share cleanly?"
-          };
-        }
-        if (method === "debit") {
-          return {
-            ok: false,
-            misconceptions: [],
-            tone: "caution",
-            title: "Diagnostic · Merchant Rail vs. Peer Rail Friction",
-            body: "A physical Debit Card swipes at merchant terminals or pulls $20 bills from an ATM (often with $3+ out-of-network fees and awkward change for $12). Consider the payment rail built specifically for instant person-to-person transfers."
-          };
-        }
-        // P2P with wrong factor
-        return {
+      feedback: {
+        mobile: {
+          ok: true,
+          head: 'Spot on — clean $12 split with zero awkward IOUs!',
+          body: 'With friends you actually know and trust, a Mobile Payment app like Venmo or Zelle settles each person’s exact $12 share in seconds—no floating $36 for three other people and $0 fee when linked to your bank.'
+        },
+        credit: {
           ok: false,
-          misconceptions: factor === "fraud" ? ["fraud_exposure"] : ["liquidity_blindness"],
-          tone: "caution",
-          title: "Diagnostic · Misidentified P2P Strength",
-          body:
-            factor === "fraud"
-              ? "Careful—Mobile P2P apps actually offer weak fraud reversal! They are appropriate here only because you personally trust your classmate. Select the trade-off dimension where P2P genuinely excels."
-              : "A bank-linked P2P payment pulls $12 from Checking rather than creating a statement liquidity float. Re-check why P2P fits a 4-way rideshare settlement."
-        };
+          misconception: 'reward_chasing',
+          head: 'Watch the group-tab IOU trap',
+          body: 'Putting all $48 on your Credit Card without splitting on the spot means floating $36 for three friends. Even with 2% points (less than $1), one forgotten $12 payback wipes out your reward twelve times over. Which tool settles exact shares among trusted friends instantly?'
+        },
+        debit: {
+          ok: false,
+          misconception: 'liquidity_blindness',
+          head: 'That drains $48 from one checking account',
+          body: 'Paying the whole $48 on one Debit Card pulls $36 of your friends’ fares straight out of your checking cash right before a trip. Look for the payment method designed to split exact $12 shares with friends immediately.'
+        }
       }
     },
     {
-      id: "3",
-      stepLabel: "Scenario 1.3 · $65 Weekly Cap",
-      scaffoldTag: "Context Signal: Impulse Drift & Dedicated Spend Cap",
-      title: "Weekly Groceries & Snacks on a Strict $65 Spending Account",
-      narrative:
-        "Mid-semester, you realize small café pastries and extra snack aisle grabs quietly inflated your monthly credit bill by 30%. This week you loaded $65 into a dedicated spending checking sub-account (with zero auto-pays attached) and want an immediate, visceral boundary at the supermarket register.",
-      factors: [
-        { id: "pain", label: "Pain-of-Paying Control", sub: "Immediate balance salience" },
-        { id: "liquidity", label: "Cash Liquidity Buffer", sub: "Grace-period float" },
-        { id: "split", label: "Split Convenience", sub: "Group expense sharing" }
-      ],
-      correctMethod: "debit",
-      correctFactor: "pain",
+      id: 's3',
+      signal: '🛒 Trusted Supermarket · Strict Food Budget',
+      prompt: 'You’re buying $65 of weekly groceries at your neighborhood supermarket. You already have $65 set aside for food in checking (with no upcoming bills at risk) and want to avoid impulse snack creep.',
+      optimal: 'debit',
       hints: [
-        "Metacognitive Prompt: No auto-pays are at risk in this dedicated sub-account, and the supermarket is a trusted store—instead, the problem you are solving is psychological overspending.",
-        "Conceptual Trade-Off Cue (LO3): Behavioral economics research (Prelec & Loewenstein, 1998) shows that decoupling consumption from payment creates a 'deferred payment illusion' that dulls spending awareness.",
-        "Concrete Psychological Check: Which method deducts from the $65 balance in real time at the checkout lane, restoring healthy 'pain of paying' and enforcing a hard ceiling?"
+        'Check the setup: the store is a trusted supermarket, your $65 grocery cash is safely set aside, and your goal is curbing impulse extras.',
+        'Remember Pain of Paying from Lesson 1: seeing money leave checking immediately reinforces a weekly food limit.',
+        'Choose the everyday card that deducts $65 straight from your set-aside grocery cash right now with zero interest risk.'
       ],
-      diagnose(method, factor) {
-        if (method === "debit" && factor === "pain") {
-          return {
-            ok: true,
-            tone: "mastery",
-            title: "Verified Pairing · Salient Pain-of-Paying Boundary",
-            body: "In a dedicated spending account with no competing auto-debits, a Debit Card makes every item immediately visible against your $65 ceiling—counteracting the deferred payment illusion that fueled earlier impulse drift."
-          };
-        }
-        if (method === "credit") {
-          return {
-            ok: false,
-            misconceptions: ["reward_chasing"],
-            tone: "caution",
-            title: "Diagnostic · Deferred Payment Illusion",
-            body: "Putting groceries back on a Credit Card delays the cash outflow until next month's statement, dulling the psychological 'pain of paying'—and chasing 2% grocery rewards ($1.30) loses money whenever low friction nudges $15 of impulse snacks into the cart."
-          };
-        }
-        if (method === "p2p") {
-          return {
-            ok: false,
-            misconceptions: [],
-            tone: "caution",
-            title: "Diagnostic · POS Acceptance & Fragmented Balances",
-            body: "Standard supermarket checkout lanes run card networks rather than peer-to-peer handles, and parking cash across P2P balances fragments budget visibility. Which card directly reflects your $65 spending sub-account at checkout?"
-          };
-        }
-        return {
+      feedback: {
+        debit: {
+          ok: true,
+          head: 'Great call — healthy spending awareness in action!',
+          body: 'At a trusted grocery store when your food money is already earmarked and no bills are at risk, a Debit Card uses immediate feedback (pain of paying) to keep your weekly grocery budget honest with zero chance of carrying a balance.'
+        },
+        credit: {
           ok: false,
-          misconceptions: factor === "liquidity" ? ["liquidity_blindness"] : [],
-          tone: "caution",
-          title: "Diagnostic · Right Card, Reversed Mechanism",
-          body:
-            factor === "liquidity"
-              ? "A Debit Card consumes liquid cash immediately rather than providing a liquidity buffer. Its advantage in this dedicated grocery sub-account is behavioral—look at how immediate deduction changes your spending awareness."
-              : "Buying solo weekly groceries does not involve splitting a bill with peers. Select the behavioral budgeting mechanism that curbs impulse drift."
-        };
+          misconception: 'reward_chasing',
+          head: 'Check your personal budgeting goal here',
+          body: 'While a Credit Card works at checkout, delayed billing softens the pain of paying—making it much easier to turn a strict $65 grocery run into $85 of extra snacks. Since your $65 food cash is already set aside safely, which card keeps your budget honest in real time?'
+        },
+        mobile: {
+          ok: false,
+          misconception: 'liquidity_blindness',
+          head: 'Peer-to-peer apps aren’t built for supermarket lanes',
+          body: 'Standard grocery checkouts don’t take peer-to-peer Venmo/Zelle transfers like friend splits, and scattering cash across app balances makes tracking a weekly food budget harder. Which standard bank card pulls directly from your dedicated grocery funds?'
+        }
       }
     },
     {
-      id: "4",
-      stepLabel: "Scenario 1.4 · $180 Urgent Repair",
-      scaffoldTag: "Context Signal: Scheduled Auto-Draft vs. Paycheck Gap",
-      title: "Urgent $180 Laptop Power Repair Before Friday's Paycheck",
-      narrative:
-        "Tuesday morning: your laptop charging port fails 48 hours before midterm code submissions. The official campus tech store charges $180. You have $210 in Checking, a $95 utility auto-draft hitting Checking on Thursday, and a confirmed $320 work-study direct deposit arriving Friday morning.",
-      factors: [
-        { id: "pain", label: "Pain-of-Paying Control", sub: "Immediate spend ceiling" },
-        { id: "liquidity", label: "Cash Liquidity Buffer", sub: "Protect Checking for auto-pay" },
-        { id: "split", label: "Split Convenience", sub: "Peer transfer speed" }
-      ],
-      correctMethod: "credit",
-      correctFactor: "liquidity",
+      id: 's4',
+      signal: '⏰ Tuesday Emergency · $95 Auto-Pay Thursday',
+      prompt: 'Your laptop charger dies on Tuesday before midterms and a replacement at the campus store costs $180. You have $210 in checking, a $95 utility auto-pay hits Thursday morning, and your $300 campus paycheck lands Friday.',
+      optimal: 'credit',
       hints: [
-        "Metacognitive Prompt: Map the timeline from Tuesday to Friday instead of looking only at today's $210 Checking number.",
-        "Conceptual Trade-Off Cue (LO4): Is 'never put an expense on credit' actually safe when an unavoidable expense collides with a scheduled Checking auto-draft two days before guaranteed income?",
-        "Concrete Liquidity Math: $210 Checking minus $180 today leaves $30—causing Thursday's $95 utility auto-draft to bounce into -$65 plus a $35 overdraft fee. Which method bridges the 72-hour gap at $0 interest when paid in full Friday?"
+        'Do the Tuesday-to-Friday math: what happens to your $210 checking balance on Thursday if $180 leaves checking today?',
+        '$210 minus $180 leaves only $30 in checking—so Thursday’s $95 utility auto-pay would bounce (-$65) and trigger a $35 overdraft fee!',
+        'Compare which method covers Tuesday’s $180 charger without touching checking cash until Friday’s $300 paycheck arrives.'
       ],
-      diagnose(method, factor) {
-        if (method === "credit" && factor === "liquidity") {
-          return {
-            ok: true,
-            tone: "mastery",
-            title: "Verified Pairing · Strategic Grace-Period Liquidity Buffer",
-            body: "Paying the $180 campus repair on Credit keeps $210 in Checking so Thursday's $95 utility auto-draft clears cleanly ($115 remaining), and paying the $180 statement charge in full when Friday's $320 paycheck lands incurs $0 interest and $0 overdraft fees."
-          };
-        }
-        if (method === "debit") {
-          return {
-            ok: false,
-            misconceptions: ["liquidity_blindness"],
-            tone: "alert",
-            title: "Diagnostic · 'Debit Is Always Safer' Overdraft Trap",
-            body: "Trace the 48-hour Checking math: $210 today minus $180 on Debit leaves just $30 in Checking. When Thursday's $95 utility auto-draft runs before Friday's paycheck, Checking plunges to -$65 and triggers a $35 overdraft fee (an instant 19% penalty!). Consider how to bridge Tuesday-to-Friday cleanly."
-          };
-        }
-        if (method === "p2p") {
-          return {
-            ok: false,
-            misconceptions: ["liquidity_blindness"],
-            tone: "alert",
-            title: "Diagnostic · Same Checking Drain Before Thursday's Auto-Draft",
-            body: "Even if the campus repair desk accepted a bank-linked P2P payment, it still pulls $180 out of your $210 Checking balance before Thursday's $95 utility auto-draft—leaving you $65 short and triggering overdraft/returned-item fees."
-          };
-        }
-        return {
+      feedback: {
+        credit: {
+          ok: true,
+          head: 'Exactly right — you just dodged a $35 overdraft fee!',
+          body: 'Swiping debit on Tuesday would drop checking from $210 to $30, causing Thursday’s $95 utility auto-pay to bounce just one day before payday! Putting $180 on a Credit Card keeps $210 in checking for Thursday, and paying the card off Friday costs $0 in interest or fees.'
+        },
+        debit: {
           ok: false,
-          misconceptions: [],
-          tone: "caution",
-          title: "Diagnostic · Right Tool, Mismatched Rationale",
-          body: "You selected the right payment method to survive Thursday's $95 utility draft, but check your trade-off reason: you are not trying to split a group tab or increase immediate deduction pain—you are protecting Checking cash across a 3-day timing gap."
-        };
+          misconception: 'liquidity_blindness',
+          head: 'Check Thursday morning’s auto-pay math!',
+          body: 'Paying $180 with Debit today drops your $210 checking balance down to $30. When Thursday’s $95 utility auto-pay pulls (24 hours before Friday’s paycheck), your account goes -$65 negative and gets hit with a $35 overdraft fee! How can you bridge Tuesday to Friday safely?'
+        },
+        mobile: {
+          ok: false,
+          misconception: 'liquidity_blindness',
+          head: 'Bank-linked apps still drain checking before Thursday',
+          body: 'Using a bank-linked Mobile Payment option still pulls $180 from your $210 checking account right away, leaving only $30 when Thursday’s $95 utility auto-pay hits—triggering a $35 overdraft fee! Look for the option with a short grace-period buffer until Friday.'
+        }
+      }
+    },
+    {
+      id: 's5',
+      signal: '🚩 Stranger Social-Media DM · Concert Tickets',
+      prompt: 'A stranger DMs you on social media offering two sold-out concert tickets for $110 if you send Zelle or Venmo right now to “hold them,” or lets you buy through a verified fan-resale card checkout link.',
+      optimal: 'credit',
+      hints: [
+        'Why do ticket scammers in social-media DMs push buyers to send Zelle or Venmo instead of using a checkout page?',
+        'Peer-to-peer transfers to strangers have virtually zero fraud refund protection, and debit disputes tie up your own checking cash.',
+        'Pick the payment method you should use on the verified resale checkout so the card issuer’s line backs the ticket guarantee.'
+      ],
+      feedback: {
+        credit: {
+          ok: true,
+          head: 'Crisis averted — scammer playbook blocked!',
+          body: 'Scammers love Zelle and Venmo DMs because voluntary peer transfers have almost zero chargeback rights. Paying via the verified resale checkout with a Credit Card gives you full dispute protection while keeping your checking cash safe.'
+        },
+        mobile: {
+          ok: false,
+          misconception: 'fraud_exposure',
+          head: 'Classic campus ticket scam trap!',
+          body: 'Zelle and Venmo treat transfers you authorize yourself like handing cash to a friend—once you pay a stranger in DMs and they block you, banks almost never refund that $110. Skip the DM transfer and think about which card best protects you on the verified checkout!'
+        },
+        debit: {
+          ok: false,
+          misconception: 'fraud_exposure',
+          head: 'Good call skipping the DM—now protect your checking cash',
+          body: 'Avoiding Zelle/Venmo saved you from an instant scam loss! Still, using a Debit Card for resale tickets pulls $110 straight out of checking today, tying up your real cash if the seller never transfers the tickets. Which card shields your bank cash completely?'
+        }
       }
     }
   ];
 
-  /* ------------------------------------------------------------------------
-     2. Stage 2: Spring Break Liquidity Simulation (Carlos)
-     ------------------------------------------------------------------------ */
+  /* Section 3: Carlos's 3 Connected Spring Break Scenes */
+  const CARLOS_SCENES = [
+    {
+      id: 'c1',
+      stepLabel: 'Scene 1 of 3 · The Hotel Deposit',
+      bgUnresolved: 'assets/scene-dorm.jpg',
+      bgSolved: 'assets/scene-hotel.jpg',
+      poseUnresolved: 'assets/carlos-asking.png',
+      poseSolved: 'assets/carlos-happy.png',
+      baseChecking: 240,
+      baseCredit: 0,
+      quote: '“Spring Break starts tomorrow! I found a beach hotel with one room left on a booking site I’ve never used before. They want a $200 deposit right now—or the host says I can Venmo them directly. With $240 in checking and my $120 streaming auto-pay hitting at 6:00 AM tomorrow, how should I pay?”',
+      solvedQuote: '“Booked! Putting the $200 deposit on my Credit Card kept all $240 safe in checking for tomorrow’s auto-pay—and if anything’s weird with the hotel listing, I’ve got full fraud protection.”',
+      optimal: 'credit',
+      hints: [
+        'Glance up at Carlos’s Wallet Bar: he has $240 in checking right now, and a $120 auto-pay hits tomorrow at 6:00 AM.',
+        'Pulling $200 out of $240 checking leaves only $40—$80 short of tomorrow’s $120 auto-pay—and this booking site is unfamiliar!',
+        'Choose the option that keeps Checking Cash at $240 tonight while giving Carlos chargeback protection on the $200 deposit.'
+      ],
+      choices: [
+        {
+          key: 'debit',
+          label: 'Debit Card',
+          sub: 'Swipe Debit for the $200 deposit now',
+          pose: 'assets/carlos-worried.png',
+          previewWallet: { checking: 40, credit: 0, fee: 35, alertChecking: true },
+          misconception: 'fraud_exposure',
+          remediationType: 'fraud_exposure',
+          triggersRemediation: true,
+          head: 'Uh-oh! Checking drops to $40 & cash is exposed!',
+          body: 'Paying $200 on Debit pulls real cash out of checking immediately—leaving just $40 against tomorrow’s $120 6:00 AM auto-pay (setting up a $35 overdraft fee!) AND leaving Carlos’s bank cash exposed if this unfamiliar booking site is sketchy.'
+        },
+        {
+          key: 'credit',
+          label: 'Credit Card',
+          sub: 'Put $200 deposit on Credit Card',
+          pose: 'assets/carlos-happy.png',
+          nextWallet: { checking: 240, credit: 200, fee: 0 },
+          head: 'Smart move! $240 checking stays untouched & fraud-shielded.',
+          body: 'Credit Card protection (FCBA) shields Carlos if the unfamiliar hotel site has issues, and all $240 stays safely in checking to cover tomorrow morning’s $120 auto-pay!'
+        },
+        {
+          key: 'mobile',
+          label: 'Mobile Payment / Venmo',
+          sub: 'Venmo $200 directly to the host’s handle',
+          pose: 'assets/carlos-alarmed.png',
+          previewWallet: { checking: 40, credit: 0, fee: 35, alertChecking: true },
+          misconception: 'fraud_exposure',
+          remediationType: 'fraud_exposure',
+          triggersRemediation: true,
+          head: 'Danger! Zero scam protection + $40 left for auto-pay!',
+          body: 'Venmoing $200 to a stranger’s listing works like handing over cash with zero chargeback shield if the room doesn’t exist—plus draining $200 drops checking to $40, guaranteeing a $35 overdraft at 6:00 AM!'
+        }
+      ]
+    },
+    {
+      id: 'c2',
+      stepLabel: 'Scene 2 of 3 · The Group Dinner',
+      bgUnresolved: 'assets/scene-restaurant.jpg',
+      bgSolved: 'assets/scene-restaurant.jpg',
+      poseUnresolved: 'assets/carlos-asking.png',
+      poseSolved: 'assets/carlos-confident.png',
+      baseChecking: 240,
+      baseCredit: 200,
+      quote: '“Dinner with my three friends at The Global Table came to $100 total—my share is $25. My roommate grins and says, ‘Put all $100 on your card for 2% cashback points and we’ll pay you back next week!’ What’s my smartest move?”',
+      solvedQuote: '“Clean and simple! Splitting right at the table via Venmo meant only my $25 share left checking ($240 → $215). Zero awkward IOUs to chase next week, and I still have $95 above tomorrow’s $120 auto-pay!”',
+      optimal: 'mobile',
+      hints: [
+        'Compare Carlos’s true dinner cost ($25) against the full group bill ($100), and check what happens if friends forget to pay back $75 next week.',
+        'Chasing 2% points on $100 earns just $2—one forgotten $25 payback loses 12x more! Meanwhile, putting all $100 on Debit drains $75 of cash needed tonight.',
+        'Pick the option that splits the bill instantly among trusted friends so Carlos only pays his exact $25 share ($240 → $215 Checking).'
+      ],
+      choices: [
+        {
+          key: 'debit',
+          label: 'Debit Card ($100 Full Tab)',
+          sub: 'Swipe Debit for all $100 & wait for paybacks',
+          pose: 'assets/carlos-stressed.png',
+          previewWallet: { checking: 140, credit: 200, fee: 0, alertChecking: true },
+          misconception: 'liquidity_blindness',
+          remediationType: 'liquidity_blindness',
+          triggersRemediation: false,
+          head: 'Whoa — $100 leaves checking for food other people ate!',
+          body: 'Putting the whole $100 table bill on Debit drops Carlos’s checking from $240 to $140—leaving only a tiny $20 cushion above tomorrow’s $120 auto-pay before he even buys gas tonight!'
+        },
+        {
+          key: 'credit',
+          label: 'Credit Card ($100 for 2% Points)',
+          sub: 'Float all $100 on Credit for $2 cashback',
+          pose: 'assets/carlos-worried.png',
+          previewWallet: { checking: 240, credit: 300, fee: 0, alertChecking: false },
+          misconception: 'reward_chasing',
+          remediationType: 'reward_chasing',
+          triggersRemediation: true,
+          head: 'Classic 2% points trap — floating $75 in IOUs!',
+          body: 'Charging all $100 just to earn $2 in reward points inflates Carlos’s Credit balance to $300 and leaves him chasing three busy college friends next week. If just one friend forgets their $25 share, Carlos loses $23 net!'
+        },
+        {
+          key: 'mobile',
+          label: 'Mobile Payment / Venmo ($25 Share)',
+          sub: 'Split instantly at the table — pay only my $25 share',
+          pose: 'assets/carlos-confident.png',
+          nextWallet: { checking: 215, credit: 200, fee: 0 },
+          head: 'Nailed it! Exact $25 share settled on the spot.',
+          body: 'Everyone settles their exact $25 share right at the table. Carlos’s Checking moves cleanly from $240 to $215—zero unpaid IOUs, clear spending awareness, and $95 of breathing room above tomorrow’s $120 auto-pay!'
+        }
+      ]
+    },
+    {
+      id: 'c3',
+      stepLabel: 'Scene 3 of 3 · 6 AM Alert & Evening Gas Stop',
+      bgUnresolved: 'assets/scene-night-alert.jpg',
+      bgSolved: 'assets/scene-beach-success.jpg',
+      poseUnresolved: 'assets/carlos-alarmed.png',
+      poseSolved: 'assets/carlos-happy.png',
+      baseChecking: 215,
+      baseCredit: 200,
+      quote: '“Hold up—my phone just buzzed! My $120 annual streaming subscription definitely auto-renews from checking at 6:00 AM tomorrow, and we need $60 of gas tonight! Heads-up: this automated highway pump places a temporary $125 hold on Debit cards overnight. How do I pay for gas?”',
+      solvedQuote: '“We made it to the beach with $0 in overdraft fees! Putting the $60 gas stop on Credit kept $215 in checking overnight—so my 6:00 AM $120 auto-pay cleared smoothly and left $95 in cash to spare!”',
+      optimal: 'credit',
+      hints: [
+        'Check Carlos’s Wallet Bar right above: Checking Cash is $215, and $120 pulls automatically at 6:00 AM ($215 − $120 = $95 max safe spend!).',
+        'An automated gas pump places a temporary $125 hold on Debit ($215 − $125 = $90 available at 6:00 AM!), and spending $100 via a bank-linked app leaves $115—both bounce the $120 bill!',
+        'Put the $60 fuel charge on Credit so the pump hold touches the credit line instead of checking, letting the 6:00 AM $120 auto-pay clear cleanly ($215 − $120 = $95 left).'
+      ],
+      choices: [
+        {
+          key: 'debit',
+          label: 'Debit Card at Pump',
+          sub: 'Swipe Debit for $60 gas ($125 temporary pump hold)',
+          pose: 'assets/carlos-alarmed.png',
+          previewWallet: { checking: -30, credit: 200, fee: 35, alertChecking: true },
+          misconception: 'liquidity_blindness',
+          remediationType: 'liquidity_blindness',
+          triggersRemediation: true,
+          head: 'Overdraft Alert! $125 pump hold bounces 6 AM auto-pay!',
+          body: 'Even though gas is $60, the automated pump locks a $125 hold on Debit overnight ($215 − $125 = $90 available). At 6:00 AM, the $120 auto-pay crashes checking to -$30 and slaps Carlos with a $35 overdraft fee!'
+        },
+        {
+          key: 'credit',
+          label: 'Credit Card',
+          sub: 'Tap Credit Card for $60 gas & protect checking for 6 AM',
+          pose: 'assets/carlos-happy.png',
+          nextWallet: { checking: 95, credit: 260, fee: 0, settled6AM: true },
+          head: '6:00 AM Auto-Pay Cleared — $95 Checking Left, $0 Fees!',
+          body: 'Tapping Credit puts the $60 fuel purchase (and any temporary pump hold) on the card line instead of checking—with bonus skimmer protection! At 6:00 AM, the $120 streaming auto-pay clears $215 checking cleanly, leaving $95 cash and $0 fees!'
+        },
+        {
+          key: 'mobile',
+          label: 'Mobile Payment + Road Snacks',
+          sub: 'Use bank-linked Mobile Pay inside for $60 gas + $40 snacks',
+          pose: 'assets/carlos-stressed.png',
+          previewWallet: { checking: -5, credit: 200, fee: 35, alertChecking: true },
+          misconception: 'liquidity_blindness',
+          remediationType: 'liquidity_blindness',
+          triggersRemediation: true,
+          head: 'Overdraft Alert! Checking drops to $115 before 6 AM!',
+          body: 'Pulling $100 from a bank-linked Mobile Wallet drops checking from $215 to $115—just $5 short when the $120 6:00 AM auto-pay hits (-$5 balance + $35 overdraft fee)!'
+        }
+      ]
+    }
+  ];
 
-  const STAGE_2_CONFIG = {
-    initialChecking: 240,
-    initialCredit: 0,
-    pendingAutoDebit: 120,
-    overdraftFeeAmount: 35,
-    steps: [
-      {
-        id: "1",
-        stepCode: "Step 2.1 · 2:15 PM",
-        scaffoldTag: "Channeling Cue: Unverified Lodging Checkout + $120 Hold Window",
-        title: "Beachfront Condo Deposit on an Unfamiliar Regional Site ($200)",
-        narrative:
-          "Carlos and his friends find a last-minute Spring Break rental on an unfamiliar website (SunCoastDirectStays.biz) requiring a $200 reservation deposit right now to hold the keys.",
-        autopayAlert: null,
-        hints: [
-          "Metacognitive Prompt: Check both sides of the ledger before paying $200—(1) do you know this regional booking site is legitimate, and (2) how much Checking cash must remain untouched for 6:00 AM tomorrow?",
-          "Conceptual Trade-Off Cue (LO2 & LO4):Carlos has $240 in Checking, but $120 is spoken for at 6:00 AM ($120 Net Safe Checking Buffer). Pulling $200 from Checking breaches that buffer AND exposes cash to a stranger.",
-          "Concrete Ledger Check: Putting $200 on Debit or P2P drops Checking to $40 (creating a -$80 deficit at 6:00 AM) and sacrifices FCBA chargeback protection. Choose the rail that shields both dispute liability and Checking cash."
-        ],
-        options: [
-          {
-            id: "debit",
-            label: "Pay $200 with Carlos's Debit Card",
-            sub: "Deducts $200 immediately from Checking ($240 → $40)",
-            checkingDelta: -200,
-            creditDelta: 0,
-            fraudRisk: "Elevated ($200 Bank Cash Exposed / Reg E Freeze)",
-            fraudSeverity: "elevated",
-            optimal: false,
-            misconceptions: ["liquidity_blindness", "fraud_exposure"],
-            tapeLabel: "2.1 Hotel Deposit (Debit)",
-            tapeAmount: "-$200 Checking",
-            feedbackTitle: "Ledger Alert · Checking Starved Below 6:00 AM Auto-Debit + Cash Freeze Risk",
-            feedbackTone: "alert",
-            feedbackBody:
-              "Inspect the Account & Risk Ledger: pulling $200 via Debit drops Checking Cash from $240 to $40. Because tomorrow's 6:00 AM $120 streaming auto-debit requires at least $120 in Checking, Carlos is now on track for a -$80 balance and a $35 overdraft fee—plus if SunCoastDirectStays.biz is fraudulent, his bank cash stays frozen during Reg E review."
-          },
-          {
-            id: "credit",
-            label: "Pay $200 with Carlos's Credit Card",
-            sub: "Posts $200 to Credit statement; keeps Checking at $240",
-            checkingDelta: 0,
-            creditDelta: 200,
-            fraudRisk: "Protected (FCBA Chargeback Shield)",
-            fraudSeverity: "low",
-            optimal: true,
-            misconceptions: [],
-            tapeLabel: "2.1 Hotel Deposit (Credit)",
-            tapeAmount: "+$200 Credit",
-            feedbackTitle: "Step 2.1 Mastered · FCBA Dispute Shield & $240 Checking Preserved",
-            feedbackTone: "mastery",
-            feedbackBody:
-              "Carlos isolates the unfamiliar lodging site onto his Credit Card under Fair Credit Billing Act protection (planned for payoff with Monday's paycheck) while keeping all $240 in Checking—preserving his $120 Net Safe Checking Buffer ahead of 6:00 AM."
-          },
-          {
-            id: "p2p",
-            label: "Send $200 via Mobile P2P App to @SunCoastHost",
-            sub: "Instant bank-linked push transfer ($240 → $40 Checking)",
-            checkingDelta: -200,
-            creditDelta: 0,
-            fraudRisk: "Severe ($200 Irreversible Cash Push)",
-            fraudSeverity: "severe",
-            optimal: false,
-            misconceptions: ["fraud_exposure", "liquidity_blindness"],
-            tapeLabel: "2.1 Hotel Deposit (P2P Push)",
-            tapeAmount: "-$200 Checking",
-            feedbackTitle: "Ledger Alert · Severe Fraud Exposure + Projected 6:00 AM Overdraft",
-            feedbackTone: "alert",
-            feedbackBody:
-              "Double hazard on the ledger: an authorized P2P push to a stranger carries zero buyer protection if the rental listing is fake, AND the bank-linked transfer drains Checking to $40—guaranteeing a -$80 overdraft (+$35 fee) when the $120 auto-debit runs at 6:00 AM."
-          }
-        ]
-      },
-      {
-        id: "2",
-        stepCode: "Step 2.2 · 7:30 PM",
-        scaffoldTag: "Channeling Cue: Group Tab Split + 2% Points Temptation",
-        title: "Group Seafood Dinner ($100 Total Bill; Carlos's Share Is $25)",
-        narrative:
-          "Four friends finish a $100 dinner ($25 each). Two friends casually say, 'Put the whole $100 on your card—you'll get 2% dining points, and we'll pay you back sometime next month!' Another friend already has Venmo open to settle up right at the table.",
-        autopayAlert: null,
-        hints: [
-          "Metacognitive Prompt: Separate Carlos's true meal cost ($25) from the $75 of classmates' meals—how much is 2% dining rewards actually worth on $75?",
-          "Conceptual Trade-Off Cue (LO3): 2% points on $75 equals just $1.50, yet floating $75 in vague 'next month' IOUs risks carrying an unpaid balance at 24% APR or draining liquid Checking cash.",
-          "Concrete Split & Liquidity Check: If everyone settles their $25 share immediately via Venmo split so Carlos only pays his $25 net share from Checking, Checking moves from $240 to $215—still comfortably above tomorrow's $120 auto-debit."
-        ],
-        options: [
-          {
-            id: "credit_all_points",
-            label: "Put the entire $100 tab on Credit to chase 2% dining points (accepting 'next month' IOUs)",
-            sub: "Adds $100 to Credit ($75 uncollected peer IOUs for $1.50 extra points)",
-            checkingDelta: 0,
-            creditDelta: 100,
-            fraudRisk: "Protected (FCBA)",
-            fraudSeverity: "low",
-            optimal: false,
-            misconceptions: ["reward_chasing"],
-            tapeLabel: "2.2 Dinner Full Tab (Points Chase)",
-            tapeAmount: "+$100 Credit ($75 IOUs)",
-            feedbackTitle: "Diagnostic · Reward-Point Chasing & Unbudgeted IOU Float",
-            feedbackTone: "caution",
-            feedbackBody:
-              "Look at the asymmetric math (LO3): chasing 2% points on $75 of friends' food earns just $1.50, while Carlos absorbs $75 of unbudgeted credit debt beyond Monday's paycheck plan. If even one friend forgets until next billing cycle, 24% APR interest wipes out those points immediately."
-          },
-          {
-            id: "debit_all",
-            label: "Swipe Carlos's Debit Card for the whole $100 bill and collect cash later",
-            sub: "Deducts $100 immediately from Checking ($240 → $140)",
-            checkingDelta: -100,
-            creditDelta: 0,
-            fraudRisk: "Low (Known Restaurant)",
-            fraudSeverity: "low",
-            optimal: false,
-            misconceptions: ["liquidity_blindness"],
-            tapeLabel: "2.2 Dinner Full Tab (Debit)",
-            tapeAmount: "-$100 Checking",
-            feedbackTitle: "Diagnostic · Liquid Checking Cushion Eroded for Peers' Meals",
-            feedbackTone: "caution",
-            feedbackBody:
-              "Paying $100 from Checking slashes Carlos's Checking Cash to $140—leaving only $20 of Net Safe Checking Buffer above tomorrow's $120 auto-debit before the group has even bought gas for the drive!"
-          },
-          {
-            id: "split_share",
-            label: "Pay only Carlos's $25 net share via instant table Venmo split",
-            sub: "Each friend settles $25 on the spot; Carlos's Checking drops by just $25 ($240 → $215)",
-            checkingDelta: -25,
-            creditDelta: 0,
-            fraudRisk: "Low (Trusted Friends)",
-            fraudSeverity: "low",
-            optimal: true,
-            misconceptions: [],
-            tapeLabel: "2.2 Dinner Share + Instant P2P Split",
-            tapeAmount: "-$25 Checking",
-            feedbackTitle: "Step 2.2 Mastered · Exact $25 Share Settled Without IOU Drift",
-            feedbackTone: "mastery",
-            feedbackBody:
-              "Settling at the table keeps Carlos's outflow strictly to his $25 meal: Checking stands at $215 ($95 Net Safe Checking Buffer above the 6:00 AM $120 auto-debit) with zero uncollected classmate IOUs."
-          }
-        ]
-      },
-      {
-        id: "3",
-        stepCode: "Step 2.3 · 10:45 PM",
-        scaffoldTag: "Channeling Cue: Pump Pre-Auth Hold + 6:00 AM Auto-Debit Collision",
-        title: "Unattended Highway Gas Pump ($80 Fill-Up) Right After Bank Auto-Pay Alert",
-        narrative:
-          "Carlos pulls into a highway gas station needing $80 of fuel. A decal on the automated outdoor pump states: 'Debit Cards: Automated fuel pumps place a temporary $125 pre-authorization hold on Checking for 24–48 hours until final fuel total settles.' Meanwhile, Carlos's card app flashes a weekend promo: 'Reach $300 in weekend Credit spend to earn $10 bonus points!'",
-        autopayAlert:
-          "Focusing Scaffold — Bank Push Alert (10:44 PM): Reminder! Your $120 Annual Streaming Auto-Debit will pull from Checking at 6:00 AM (7 hours from now).",
-        hints: [
-          "Metacognitive Prompt: Why is looking only at the '$80 fuel price' deceptive at an automated outdoor gas pump when a 6:00 AM Checking auto-debit is 7 hours away?",
-          "Conceptual Trade-Off Cue (LO2, LO3, LO4): Compare (a) what a $125 Debit pump hold leaves in Checking at 6:00 AM, (b) outdoor pump card-skimmer risk, and (c) whether spending extra money in the convenience store to unlock '$10 bonus points' actually saves money.",
-          "Concrete Arithmetic Check: Checking is $215. Swiping Debit locks $125 ($215 - $125 = $90 available), so the 6:00 AM $120 auto-debit overdrafts Checking to -$30 (+$35 fee!). Meanwhile, buying $35 of unneeded snacks to earn $10 points loses $25 net."
-        ],
-        options: [
-          {
-            id: "debit_pump",
-            label: "Insert Carlos's Debit Card at the outdoor pump ($80 fuel; $125 temporary Checking hold)",
-            sub: "Places $125 pump hold on $215 Checking ($90 available when 6:00 AM $120 auto-debit hits)",
-            checkingDelta: -125,
-            creditDelta: 0,
-            isPumpHold: true,
-            fraudRisk: "Elevated (Outdoor Pump Skimmer Risk)",
-            fraudSeverity: "elevated",
-            optimal: false,
-            misconceptions: ["liquidity_blindness", "fraud_exposure"],
-            tapeLabel: "2.3 Gas Pump Debit ($125 Hold)",
-            tapeAmount: "-$125 Hold",
-            feedbackTitle: "Ledger Overdraft Triggered · $125 Debit Pump Hold Collides with 6:00 AM Auto-Debit",
-            feedbackTone: "alert",
-            feedbackBody:
-              "Crucial real-world trap: although the fuel costs $80, the automated pump locks $125 of Checking cash overnight ($215 − $125 = $90 available). At 6:00 AM, the $120 streaming auto-debit hits $90 available Checking—triggering a -$30 overdraft and a $35 Overdraft Fee, while also exposing Debit to outdoor pump skimmers."
-          },
-          {
-            id: "credit_fuel_only",
-            label: "Tap Credit Card (contactless) for the $80 fill-up only",
-            sub: "Posts $80 to Credit ($280 total); keeps all $215 Checking cash untouched for 6:00 AM",
-            checkingDelta: 0,
-            creditDelta: 80,
-            fraudRisk: "Protected (Contactless Token + FCBA)",
-            fraudSeverity: "low",
-            optimal: true,
-            misconceptions: [],
-            tapeLabel: "2.3 Highway Fuel (Credit Tap)",
-            tapeAmount: "+$80 Credit",
-            feedbackTitle: "Step 2.3 Mastered · Pump Hold Absorbed on Credit & 6:00 AM Auto-Debit Cleared!",
-            feedbackTone: "mastery",
-            feedbackBody:
-              "Tapping Credit absorbs any fuel-pump pre-authorization hold harmlessly on the credit line, blocks magnetic-stripe skimmers via contactless tokenization, and preserves $215 in Checking—so the 6:00 AM $120 auto-debit clears cleanly with $95 Checking Cash left and $0 fees!"
-          },
-          {
-            id: "credit_promo_chase",
-            label: "Put $80 fuel + $35 of unbudgeted snacks/gear on Credit to hit the $300 promo for $10 bonus points",
-            sub: "Adds $115 to Credit ($315 total) — spending $35 extra to unlock $10 in points",
-            checkingDelta: 0,
-            creditDelta: 115,
-            fraudRisk: "Protected (FCBA)",
-            fraudSeverity: "low",
-            optimal: false,
-            misconceptions: ["reward_chasing"],
-            tapeLabel: "2.3 Fuel + $35 Promo Chase",
-            tapeAmount: "+$115 Credit",
-            feedbackTitle: "Diagnostic · Gamified Spend-Threshold Trap (-$25 Net Loss)",
-            feedbackTone: "caution",
-            feedbackBody:
-              "Carlos avoided the Checking overdraft, but fell into a classic reward-threshold trap (LO3): buying $35 of unbudgeted convenience-store items solely to unlock $10 in bonus points leaves him $25 poorer and pushes his Credit statement past his planned Monday paycheck payoff."
-          }
-        ]
-      }
-    ]
-  };
-
-  /* ------------------------------------------------------------------------
-     3. Stage 3: Faded Transfer Challenge — Maya's Move-In Week
-        (All Channeling Tags, Pre-Subtracted Safe Buffers, & Auto-Pay Banners Faded)
-     ------------------------------------------------------------------------ */
-
-  const STAGE_3_CONFIG = {
-    initialChecking: 210,
-    initialCredit: 0,
-    scheduledUtilityDraft: 130, // Mentioned ONLY in Maya's prose brief — NOT pre-subtracted on raw ledger!
-    overdraftFeeAmount: 35,
-    steps: [
-      {
-        id: "1",
-        stepCode: "Transaction 3.1 · 1:20 PM",
-        title: "Used Mini-Fridge Reservation on an Unverified Student Listing Site ($95)",
-        narrative:
-          "Maya finds a clean dorm mini-fridge listed for $95 on an independent off-campus classifieds webpage (DormDealLiquidators.org) that requires payment online before 5:00 PM curb pickup via Debit Card, Credit Card, or Mobile P2P transfer (@CampusLiquidator).",
-        hints: [
-          "Metacognitive Self-Check: Without context tags, identify (1) whether this seller is verified and (2) what scheduled obligation from Maya's Move-In brief hits Checking tonight.",
-          "Conceptual Cue: Remember how statutory dispute protection (FCBA vs. Reg E vs. P2P push) interacts with tonight's scheduled Checking outflow.",
-          "Concrete Verification: Maya has $210 in Checking with a $130 utility draft tonight at 11:59 PM ($80 true spendable Checking margin). Pulling $95 from Checking already breaches tonight's $130 draft AND exposes her to an unverified web listing."
-        ],
-        options: [
-          {
-            id: "debit",
-            label: "Enter Maya's Debit Card on DormDealLiquidators.org ($95)",
-            sub: "Deducts $95 from Checking ($210 → $115 displayed)",
-            checkingDelta: -95,
-            creditDelta: 0,
-            fraudRisk: "Elevated (Unverified Site / Bank Cash Exposed)",
-            fraudSeverity: "elevated",
-            optimal: false,
-            misconceptions: ["liquidity_blindness", "fraud_exposure"],
-            tapeLabel: "3.1 Mini-Fridge (Debit)",
-            tapeAmount: "-$95 Checking",
-            feedbackTitle: "Diagnostic · Hidden Tonight Deficit + Unverified Merchant Exposure",
-            feedbackTone: "alert",
-            feedbackBody:
-              "Although the raw bank screen still shows $115 in Checking, recall the Move-In brief: a $130 electric utility setup draft runs at 11:59 PM tonight ($115 − $130 = -$15 overdraft + $35 fee), and paying an unverified classifieds site by Debit puts Maya's actual bank cash at risk."
-          },
-          {
-            id: "credit",
-            label: "Checkout with Maya's Credit Card ($95)",
-            sub: "Posts $95 to Credit (covered by Friday's $400 refund); Checking stays $210",
-            checkingDelta: 0,
-            creditDelta: 95,
-            fraudRisk: "Low (FCBA Chargeback Shield)",
-            fraudSeverity: "low",
-            optimal: true,
-            misconceptions: [],
-            tapeLabel: "3.1 Mini-Fridge (Credit)",
-            tapeAmount: "+$95 Credit",
-            feedbackTitle: "Transaction 3.1 Verified · Unverified Seller Shielded & Checking Intact",
-            feedbackTone: "mastery",
-            feedbackBody:
-              "Maya protects herself under FCBA dispute rules in case the classifieds listing fails to deliver, while keeping all $210 in Checking ahead of tonight's scheduled outflows."
-          },
-          {
-            id: "p2p",
-            label: "Send $95 via Mobile P2P App to @CampusLiquidator",
-            sub: "Instant Checking-linked push ($210 → $115 displayed)",
-            checkingDelta: -95,
-            creditDelta: 0,
-            fraudRisk: "Severe ($95 Irreversible Cash Push)",
-            fraudSeverity: "severe",
-            optimal: false,
-            misconceptions: ["fraud_exposure", "liquidity_blindness"],
-            tapeLabel: "3.1 Mini-Fridge (P2P Push)",
-            tapeAmount: "-$95 Checking",
-            feedbackTitle: "Diagnostic · Irreversible Stranger Transfer + Tonight's Utility Deficit",
-            feedbackTone: "alert",
-            feedbackBody:
-              "Dorm classified scams frequently request P2P pushes because authorized transfers have virtually zero scam recovery—and draining $95 from Checking leaves $115, which cannot cover tonight's $130 11:59 PM electric utility draft."
-          }
-        ]
-      },
-      {
-        id: "2",
-        stepCode: "Transaction 3.2 · 4:10 PM",
-        title: "Shared Suite Cleaning Supplies ($60 Total Across 3 Suitemates; Maya's Share Is $20)",
-        narrative:
-          "At the campus hardware store, Maya and her two new suitemates buy $60 of shared trash cans and cleaning spray ($20 each). Both suitemates have Venmo open at the register to settle immediately, while Maya notices her Credit Card offers 1.5% cashback ($0.90 total) if she charges all $60 and tells them, 'No rush—just grab paper towels sometime next month.'",
-        hints: [
-          "Metacognitive Self-Check: Evaluate what Maya actually owes ($20) versus the hidden cost of waving away immediate peer settlement on Move-In Day.",
-          "Conceptual Cue: Compare 1.5% cashback on $40 of roommates' items ($0.60) against uncollected roommate IOUs or draining $60 from Checking.",
-          "Concrete Verification: Settling Maya's exact $20 share immediately via P2P split leaves $190 in Checking ($60 safely above tonight's $130 utility draft) with zero lingering suitemate IOUs."
-        ],
-        options: [
-          {
-            id: "credit_wave_iou",
-            label: "Put all $60 on Maya's Credit Card and waive immediate repayment to earn $0.90 cashback",
-            sub: "Adds $60 to Credit ($40 uncollected suitemate IOUs for $0.60 extra cashback)",
-            checkingDelta: 0,
-            creditDelta: 60,
-            fraudRisk: "Low (Campus Store)",
-            fraudSeverity: "low",
-            optimal: false,
-            misconceptions: ["reward_chasing"],
-            tapeLabel: "3.2 Suite Supplies ($60 Points Chase)",
-            tapeAmount: "+$60 Credit",
-            feedbackTitle: "Diagnostic · $0.60 Cashback Rationalization for $40 Uncollected IOUs",
-            feedbackTone: "caution",
-            feedbackBody:
-              "Waving off two suitemates who already had their apps open to pay $20 each trades $40 of concrete cash repayment for $0.60 in extra rewards—turning an even split into unbudgeted credit creep."
-          },
-          {
-            id: "debit_full_60",
-            label: "Put all $60 on Maya's Debit Card and let suitemates pay cash whenever they visit an ATM",
-            sub: "Deducts $60 immediately from Checking ($210 → $150 displayed)",
-            checkingDelta: -60,
-            creditDelta: 0,
-            fraudRisk: "Low (Campus Store)",
-            fraudSeverity: "low",
-            optimal: false,
-            misconceptions: ["liquidity_blindness"],
-            tapeLabel: "3.2 Suite Supplies (Full Debit)",
-            tapeAmount: "-$60 Checking",
-            feedbackTitle: "Diagnostic · Unnecessary $40 Checking Drain Before Evening Expenses",
-            feedbackTone: "caution",
-            feedbackBody:
-              "Fronting $40 of suitemates' supplies out of Checking drops Maya's balance to $150—leaving only $20 of breathing room above tonight's $130 electric utility draft before evening textbook/lab purchases."
-          },
-          {
-            id: "instant_p2p_20",
-            label: "Settle Maya's exact $20 share on the spot via instant P2P split at checkout",
-            sub: "Deducts only Maya's $20 share from Checking ($210 → $190 displayed)",
-            checkingDelta: -20,
-            creditDelta: 0,
-            fraudRisk: "Low (Trusted Suitemates Present)",
-            fraudSeverity: "low",
-            optimal: true,
-            misconceptions: [],
-            tapeLabel: "3.2 Suite Share (Instant $20 Split)",
-            tapeAmount: "-$20 Checking",
-            feedbackTitle: "Transaction 3.2 Verified · Clean $20 Settlement & $190 Checking Maintained",
-            feedbackTone: "mastery",
-            feedbackBody:
-              "Settling right at the register locks in Maya's true $20 cost cleanly while preserving $190 in Checking."
-          }
-        ]
-      },
-      {
-        id: "3",
-        stepCode: "Transaction 3.3 · 7:30 PM",
-        title: "Required Chemistry Lab Kit & Access Code at University Bookstore ($75)",
-        narrative:
-          "Maya stops at the official university bookstore for a mandatory $75 chemistry lab kit and digital code needed at 8:00 AM tomorrow. Her raw mobile banking app shows $190 in Checking, and her $400 financial-aid refund posts Friday morning.",
-        hints: [
-          "Metacognitive Self-Check: Why does the raw mobile bank balance of '$190 Available Checking' NOT mean Maya can safely pull $75 from Checking at 7:30 PM?",
-          "Conceptual Cue: Recall from Maya's Move-In brief what happens at 11:59 PM tonight—real bank apps do not pre-subtract scheduled overnight ACH drafts.",
-          "Concrete Verification: $190 Checking minus $75 leaves $115, which fails tonight's $130 11:59 PM electric utility draft (-$15 overdraft + $35 fee). Bridging the 4-day gap until Friday's $400 refund requires keeping Checking >= $130 tonight."
-        ],
-        options: [
-          {
-            id: "debit_75",
-            label: "Pay $75 with Maya's Debit Card since Checking displays $190",
-            sub: "Deducts $75 from Checking ($190 → $115 before 11:59 PM batch)",
-            checkingDelta: -75,
-            creditDelta: 0,
-            fraudRisk: "Low (University Bookstore)",
-            fraudSeverity: "low",
-            optimal: false,
-            misconceptions: ["liquidity_blindness"],
-            tapeLabel: "3.3 Chem Lab Kit (Debit)",
-            tapeAmount: "-$75 Checking",
-            feedbackTitle: "Overdraft Triggered at 11:59 PM · Unlisted $130 Utility Draft Collides with $115 Checking",
-            feedbackTone: "alert",
-            feedbackBody:
-              "This is the #1 real-world student overdraft pattern: $190 looked sufficient for $75, reducing Checking to $115—and at 11:59 PM tonight, the $130 electric utility setup draft pulled Checking down to -$15 plus a $35 Overdraft Fee (-$50!). Revise to protect tonight's liquidity."
-          },
-          {
-            id: "credit_75",
-            label: "Pay $75 with Maya's Credit Card and schedule full payoff for Friday's $400 refund",
-            sub: "Posts $75 to Credit ($170 total); preserves $190 Checking for 11:59 PM",
-            checkingDelta: 0,
-            creditDelta: 75,
-            fraudRisk: "Low (University Bookstore + FCBA)",
-            fraudSeverity: "low",
-            optimal: true,
-            misconceptions: [],
-            tapeLabel: "3.3 Chem Lab Kit (Credit Float)",
-            tapeAmount: "+$75 Credit",
-            feedbackTitle: "Transaction 3.3 & Stage 3 Mastered · 11:59 PM $130 Utility Draft Cleared Safely!",
-            feedbackTone: "mastery",
-            feedbackBody:
-              "Without any warning banners or pre-computed buffer rows, you independently protected Maya's Checking balance! At 11:59 PM, the $130 electric utility draft cleared $190 Checking cleanly—leaving $60 Cash, $0 overdraft fees, and a $170 Credit statement fully covered by Friday's $400 refund at $0 interest."
-          },
-          {
-            id: "campus_p2p_75",
-            label: "Pay $75 via Bank-Linked Campus P2P / ACH Checkout",
-            sub: "Initiates $75 Checking pull ($190 → $115 before 11:59 PM batch)",
-            checkingDelta: -75,
-            creditDelta: 0,
-            fraudRisk: "Low (University Bookstore)",
-            fraudSeverity: "low",
-            optimal: false,
-            misconceptions: ["liquidity_blindness"],
-            tapeLabel: "3.3 Chem Lab Kit (Bank P2P)",
-            tapeAmount: "-$75 Checking",
-            feedbackTitle: "Overdraft Triggered at 11:59 PM · Bank-Linked App Still Drains Checking to $115",
-            feedbackTone: "alert",
-            feedbackBody:
-              "Switching the interface from a plastic Debit card to a bank-linked payment app still pulls $75 from the same $190 Checking pool—leaving $115 when tonight's $130 electric utility draft runs and triggering a -$15 overdraft + $35 fee."
-          }
-        ]
-      }
-    ]
-  };
-
-  /* ------------------------------------------------------------------------
-     4. Targeted Remediation Micro-Tasks (3 Dominant Misconception Paths)
-     ------------------------------------------------------------------------ */
-
-  const REMEDIATION_TASKS = {
+  /* Track A Adaptive Remediation Quick-Fixes (Inside Carlos Stage with carlos-thinking.png) */
+  const REMEDIATION_QUICK_FIXES = {
     liquidity_blindness: {
-      key: "liquidity_blindness",
-      badge: "Targeted Remediation · Cash Liquidity & Auto-Pay Timing (LO4)",
-      heading: "Repairing the 'Debit Is Always Safer' Overgeneralization",
-      whyTriggered:
-        "Your recent decisions treated immediate Checking deduction as safer even when scheduled auto-debits or fuel-pump holds were about to pull from the same Checking balance.",
-      trapTitle: "Naive Rule: 'Always Swipe Debit'",
-      trapBody:
-        "Starting Checking: $210 with a $120 scheduled auto-debit tonight. Paying an urgent $150 expense on Debit drops Checking to $60 → tonight's $120 auto-debit hits → -$60 balance + $35 Overdraft Fee (an immediate 23% fee penalty).",
-      soundTitle: "Strategic Rule: 'Buffer Pending Auto-Debits'",
-      soundBody:
-        "Reserve $120 in Checking first ($210 − $120 = $90 true safe Checking). Put the $150 urgent expense on Credit within the grace period, let tonight's $120 auto-debit clear ($90 left), and pay $150 in full on payday → $0 fees, $0 interest.",
-      question:
-        "Verification Check: You have $190 in Checking, a $110 electric bill auto-drafting tonight, and $95 in required lab materials needed today before tomorrow's confirmed $260 paycheck. Which move protects liquidity at $0 fee cost?",
+      type: 'liquidity_blindness',
+      title: 'Quick-Fix: Protecting Your Auto-Pay Cash Cushion',
+      naiveLabel: '❌ Naive Debit / Bank Pull',
+      naiveText: '$215 Checking − $125 pump hold = $90 available → 6 AM $120 auto-pay bounces → $35 Overdraft Fee.',
+      smartLabel: '✅ Strategic Buffer Move',
+      smartText: '$60 gas on Credit → Checking stays $215 → 6 AM $120 auto-pay clears → $95 Cash Left & $0 Fees.',
+      question: 'Quick Check: You have $150 in checking Wednesday night, a $110 electric auto-pay Thursday morning, and a required $60 textbook needed tonight before Friday’s paycheck. What prevents a $35 overdraft?',
       options: [
         {
-          id: "a",
-          label: "Swipe Debit for $95 today so you never borrow ($190 → $95 Checking before tonight's $110 draft)",
-          correct: false,
-          feedback:
-            "Check tonight's subtraction: $95 remaining minus tonight's $110 electric auto-draft leaves -$15 and triggers a $35 overdraft fee."
+          key: 'a',
+          label: 'Swipe Debit tonight ($150 → $90) so you never borrow money.',
+          ok: false,
+          nudge: 'Check the math: $90 left in checking won’t cover Thursday morning’s $110 auto-pay!'
         },
         {
-          id: "b",
-          label: "Put $95 on Credit today, let tonight's $110 electric auto-draft clear Checking ($80 left), and pay the $95 Credit charge in full tomorrow",
-          correct: true,
-          feedback:
-            "Verified! Preserving Checking above $110 prevents tonight's $35 overdraft fee, and paying the $95 statement charge within the grace period tomorrow incurs $0 interest."
+          key: 'b',
+          label: 'Put the $60 textbook on Credit tonight so $150 covers Thursday’s $110 auto-pay, then pay off Credit Friday.',
+          ok: true,
+          nudge: 'Spot on! Your $150 checking covers the $110 auto-pay ($40 left), and Friday’s paycheck pays the $60 card charge for $0 interest or fees.'
         },
         {
-          id: "c",
-          label: "Pay $95 via bank-linked P2P so it routes through an app instead of your plastic Debit card",
-          correct: false,
-          feedback:
-            "A bank-linked P2P pull drains the exact same $95 from Checking, still causing tonight's $110 electric auto-draft to bounce by -$15."
+          key: 'c',
+          label: 'Pay $60 with a bank-linked Venmo card tonight.',
+          ok: false,
+          nudge: 'A bank-linked P2P card still pulls $60 from checking before Thursday morning!'
         }
       ]
     },
     fraud_exposure: {
-      key: "fraud_exposure",
-      badge: "Targeted Remediation · Statutory Fraud Shield & Cash Isolation (LO2)",
-      heading: "Separating P2P Cash Pushes, Reg E Freezes, and FCBA Chargebacks",
-      whyTriggered:
-        "Your recent choices exposed direct Checking funds or irreversible P2P transfers to unverified sellers or high-skimmer terminals.",
-      trapTitle: "Exposed Path: P2P to Strangers or Debit Online",
-      trapBody:
-        "Sending $200 via P2P to an unknown seller counts as an authorized push—if they vanish, recovery is $0. Paying $200 via Debit gives Reg E rights, yet $200 of your real Checking cash stays missing for up to 10 business days during bank investigation.",
-      soundTitle: "Insulated Path: Credit FCBA Shield for Unknown Vendors",
-      soundBody:
-        "Under the Fair Credit Billing Act (FCBA), disputing an undelivered or fraudulent Credit charge withholds the card issuer's money—leaving 100% of your Checking cash intact to cover rent and utilities.",
-      question:
-        "Verification Check: An unfamiliar off-campus seller sends a checkout link asking for a $130 deposit to hold a used desk before Saturday pickup. Which choice protects both dispute rights and Checking liquidity?",
+      type: 'fraud_exposure',
+      title: 'Quick-Fix: Shielding Bank Cash from Unverified Sellers',
+      naiveLabel: '❌ Venmo / Debit to Unverified Site',
+      naiveText: '$200 leaves your real checking account today → zero P2P recall (or cash frozen during bank dispute) → bills bounce.',
+      smartLabel: '✅ Credit Card Shield (FCBA)',
+      smartText: '$200 sits on the card issuer’s line → your $240 checking cash stays untouched even if you dispute a fake listing.',
+      question: 'Quick Check: An unfamiliar website lists a $140 dorm mini-fridge via Zelle or card checkout. How do you keep your checking cash safe?',
       options: [
         {
-          id: "a",
-          label: "Send $130 on Venmo/Zelle and type 'Desk Deposit — Refundable' in the memo line",
-          correct: false,
-          feedback:
-            "Memo notes on peer-to-peer transfers carry zero legal chargeback protection; authorized P2P sends to strangers cannot be reversed for non-delivery."
+          key: 'a',
+          label: 'Send Zelle fast so nobody else grabs the deal.',
+          ok: false,
+          nudge: 'Zelle transfers to strangers work like irreversible cash—banks almost never refund scams!'
         },
         {
-          id: "b",
-          label: "Enter your Debit Card number so the $130 clears directly from Checking right away",
-          correct: false,
-          feedback:
-            "If the seller disappears or skims the card, $130+ of your actual Checking cash is tied up while the bank investigates."
+          key: 'b',
+          label: 'Use a Credit Card on checkout so you have chargeback rights and your checking cash stays untouched.',
+          ok: true,
+          nudge: 'Exactly! FCBA protection lets you dispute bad charges without freezing a single dollar of checking cash.'
         },
         {
-          id: "c",
-          label: "Pay only via Credit Card merchant checkout (or decline the deal if they demand P2P), keeping Checking untouched",
-          correct: true,
-          feedback:
-            "Verified! Credit checkout provides FCBA non-delivery chargeback protection while keeping your liquid Checking cash completely insulated."
+          key: 'c',
+          label: 'Swipe Debit so the money comes out cleanly right now.',
+          ok: false,
+          nudge: 'Even with Debit dispute rules, your real $140 stays missing from checking while the bank investigates!'
         }
       ]
     },
     reward_chasing: {
-      key: "reward_chasing",
-      badge: "Targeted Remediation · Spending Psychology & Points Arithmetic (LO3)",
-      heading: "Seeing Through Deferred Payment Illusion & 2% Reward Rationalization",
-      whyTriggered:
-        "Your recent choices chased small percentage rewards or Spend-Bonus thresholds by absorbing unbudgeted impulse items or uncollected peer IOUs.",
-      trapTitle: "Psychological Trap: Chasing 2%–3% Points",
-      trapBody:
-        "Floating $90 of acquaintances' brunch tabs for 3% dining points earns $2.70—yet one uncollected $30 share loses 11x the reward, and carrying $90 for two months at 24% APR costs $3.60 in interest.",
-      soundTitle: "Disciplined Rule: Budget First, Never Spend Extra for Points",
-      soundBody:
-        "Treat credit rewards strictly as a passive rebate on already-budgeted solo expenses paid in full; use instant P2P splits at the table for group tabs and Debit caps when curbing impulse drift.",
-      question:
-        "Verification Check: At a $120 group brunch (your meal is $30), two acquaintances say, 'Put all $120 on your Credit Card for the 3% dining cashback and we'll pay you back next month.' What is the sound financial decision?",
+      type: 'reward_chasing',
+      title: 'Quick-Fix: Why 2% Points Lose to One Unpaid Split',
+      naiveLabel: '❌ Chasing Points on Group Tabs',
+      naiveText: 'Float $100 group dinner on Credit for 2% (+$2 points) → one friend forgets their $25 payback → -$23 Net Loss.',
+      smartLabel: '✅ Instant Table Split',
+      smartText: 'Everyone settles their exact $25 share via Venmo at the table → $0 unpaid IOUs & honest budget tracking.',
+      question: 'Quick Check: Three friends owe $30 each on a $90 takeout order. Why is floating all $90 on your credit card for 2% ($1.80) points risky?',
       options: [
         {
-          id: "a",
-          label: "Swipe your Credit Card for $120 and wait until next month—$2.70 extra cashback is guaranteed profit",
-          correct: false,
-          feedback:
-            "Risking $90 of uncollected debt and next-cycle 24% APR interest to chase $2.70 has strongly negative expected value."
+          key: 'a',
+          label: 'Credit cards charge a $35 swipe fee at restaurants.',
+          ok: false,
+          nudge: 'Regular restaurant swipes don’t charge $35—compare the $1.80 reward against an unpaid $30 friend share!'
         },
         {
-          id: "b",
-          label: "Pay only your $30 share (or require instant P2P transfers to clear before swiping) rather than floating $90 for $2.70 in points",
-          correct: true,
-          feedback:
-            "Verified! Refusing uncollected IOU float prevents reward-point rationalization from inflating your credit statement beyond your monthly budget."
+          key: 'b',
+          label: 'One forgotten $30 payback wipes out 16x the $1.80 points and inflates your monthly bill.',
+          ok: true,
+          nudge: 'Right on! Settling splits immediately protects both your friendships and your budget.'
         },
         {
-          id: "c",
-          label: "Put all $120 on your Debit Card instead so you avoid credit card points temptation while floating the $90",
-          correct: false,
-          feedback:
-            "Putting $120 on Debit still fronts $90 of other people's meals—draining your liquid Checking cash immediately!"
+          key: 'c',
+          label: 'Cashback points expire at midnight.',
+          ok: false,
+          nudge: 'Points don’t vanish at midnight—the real danger is carrying $60 of unpaid friend IOUs for pennies!'
         }
       ]
     }
   };
 
+  /* Section 4: Solo Challenge — Maya's Move-In Week (Faded Scaffolds!) */
+  const MAYA_MOVES = [
+    {
+      id: 'm1',
+      stepLabel: 'Move 1 of 3 · Online Classifieds Mini-Fridge',
+      baseChecking: 210,
+      baseCredit: 0,
+      prompt: 'Maya finds a $95 mini-fridge from an unverified seller on a local classifieds site. She can pay through the platform’s card checkout or send a direct peer transfer.',
+      optimal: 'credit',
+      hints: [
+        'Check two details from Maya’s planner note: is this seller verified, and how much checking cash must stay untouched for tonight?',
+        'Maya needs $130 in checking at 11:59 PM for the electric utility draft ($210 − $95 = $115 would fall short!), plus the seller is unverified.',
+        'Use the option that keeps Checking at $210 while protecting the $95 purchase against seller non-delivery.'
+      ],
+      feedback: {
+        credit: {
+          ok: true,
+          nextWallet: { checking: 210, credit: 95, fee: 0 },
+          head: 'Move 1 locked in — $210 checking intact & purchase protected.',
+          body: 'Putting $95 on Credit keeps Maya’s $210 checking balance untouched for tonight’s commitments and protects her if the unverified seller never delivers.'
+        },
+        debit: {
+          ok: false,
+          misconception: 'liquidity_blindness',
+          previewWallet: { checking: 115, credit: 0, fee: 35, alert: true },
+          head: 'Check Maya’s planner note for 11:59 PM tonight!',
+          body: 'Pulling $95 from Debit drops Maya’s checking from $210 to $115—leaving her short of tonight’s $130 electric auto-draft (-$15 + $35 overdraft fee) while tying up bank cash with an unverified seller.'
+        },
+        mobile: {
+          ok: false,
+          misconception: 'fraud_exposure',
+          previewWallet: { checking: 115, credit: 0, fee: 35, alert: true },
+          head: 'Double risk: zero buyer recall + 11:59 PM shortfall!',
+          body: 'Sending $95 via P2P to an unverified classifieds seller has virtually no scam protection AND drops checking to $115—short of tonight’s $130 electric utility draft!'
+        }
+      }
+    },
+    {
+      id: 'm2',
+      stepLabel: 'Move 2 of 3 · Suite Cleaning Supplies ($60 Total, $20 Share)',
+      baseChecking: 210,
+      baseCredit: 95,
+      prompt: 'At Target, Maya and two trusted suitemates buy $60 of shared cleaning supplies ($20 each). Everyone has their phones out at the register.',
+      optimal: 'mobile',
+      hints: [
+        'Maya trusts her suitemates, her real share is $20, and check how much remains in checking after $20 vs. $60.',
+        '$210 minus $20 leaves $190 in checking (plenty above tonight’s $130 draft), without floating $40 of suitemate IOUs.',
+        'Settle Maya’s exact $20 share right at checkout via instant peer split.'
+      ],
+      feedback: {
+        mobile: {
+          ok: true,
+          nextWallet: { checking: 190, credit: 95, fee: 0 },
+          head: 'Move 2 complete — clean $20 split ($190 left in checking).',
+          body: 'Settling exact $20 shares on the spot via Mobile Payment avoids suitemate IOUs and leaves $190 in checking—still $60 safely above tonight’s $130 electric utility draft.'
+        },
+        credit: {
+          ok: false,
+          misconception: 'reward_chasing',
+          previewWallet: { checking: 210, credit: 155, fee: 0, alert: false },
+          head: 'Don’t float $40 of suitemate IOUs for 90¢ in points',
+          body: 'Charging all $60 on Credit to chase 1.5% cashback earns less than $1 while leaving Maya waiting on $40 of move-in-week paybacks. Which option settles her exact $20 share right now?'
+        },
+        debit: {
+          ok: false,
+          misconception: 'liquidity_blindness',
+          previewWallet: { checking: 150, credit: 95, fee: 0, alert: true },
+          head: 'Paying all $60 from checking squeezes tonight’s buffer',
+          body: 'Swiping Debit for everyone’s $60 pulls $40 of suitemates’ supplies out of Maya’s checking ($210 → $150), shrinking her safety margin right before evening errands and tonight’s utility draft.'
+        }
+      }
+    },
+    {
+      id: 'm3',
+      stepLabel: 'Move 3 of 3 · 8:00 PM Required Chemistry Lab Kit ($75)',
+      baseChecking: 190,
+      baseCredit: 95,
+      prompt: 'At 8:00 PM, Maya needs to buy a required $75 chemistry lab kit at the campus bookstore for 9:00 AM lab tomorrow (her $400 campus job direct deposit arrives tomorrow morning).',
+      optimal: 'credit',
+      hints: [
+        'Subtract $75 from Maya’s $190 checking balance and compare what’s left against her 11:59 PM planner note.',
+        '$190 − $75 leaves $115 in checking—so tonight’s 11:59 PM $130 electric auto-draft would bounce (-$15) and trigger a $35 overdraft fee!',
+        'Bridge tonight’s $75 bookstore charge on Credit so $190 covers the $130 11:59 PM electric draft ($60 left), then pay off Credit tomorrow morning when the $400 deposit lands.'
+      ],
+      feedback: {
+        credit: {
+          ok: true,
+          nextWallet: { checking: 60, credit: 170, fee: 0, settledNight: true },
+          head: '11:59 PM Electric Draft ($130) Cleared — $60 Cash Left, $0 Fees!',
+          body: 'Independent transfer mastered! Putting the $75 lab kit on Credit kept $190 in checking so the 11:59 PM $130 electric utility draft cleared smoothly ($60 remaining, $0 fees)—and tomorrow morning’s $400 deposit pays off the $170 credit balance in full for $0 interest!'
+        },
+        debit: {
+          ok: false,
+          misconception: 'liquidity_blindness',
+          previewWallet: { checking: -15, credit: 95, fee: 35, alert: true },
+          head: '11:59 PM Overdraft! $190 − $75 leaves only $115!',
+          body: 'Swiping Debit at 8:00 PM drops checking to $115. Four hours later at 11:59 PM, the $130 city electric auto-draft pulls checking to -$15 and triggers a $35 overdraft fee just hours before Friday’s paycheck!'
+        },
+        mobile: {
+          ok: false,
+          misconception: 'liquidity_blindness',
+          previewWallet: { checking: -15, credit: 95, fee: 35, alert: true },
+          head: 'Bank-linked Mobile Pay still drains checking before 11:59 PM!',
+          body: 'Paying $75 via a bank-linked campus P2P app still deducts $75 from checking tonight ($190 → $115), causing the 11:59 PM $130 electric utility draft to bounce (-$15 + $35 overdraft fee)!'
+        }
+      }
+    }
+  ];
+
   /* ------------------------------------------------------------------------
-     5. Canonical Application State
+     2. Application State Initialization & Persistence
      ------------------------------------------------------------------------ */
 
-  function createInitialState() {
-    const s1Items = {};
-    STAGE_1_ITEMS.forEach((item) => {
-      s1Items[item.id] = {
-        selectedMethod: null,
-        selectedFactor: null,
-        hintLevel: 0,
-        attempts: 0,
-        mastered: false,
-        lastCheckedKey: null,
-        feedback: null
-      };
-    });
-
-    const s2Steps = {};
-    STAGE_2_CONFIG.steps.forEach((step) => {
-      s2Steps[step.id] = {
-        selectedOption: null,
-        committedOption: null,
-        hintLevel: 0,
-        attempts: 0,
-        mastered: false,
-        feedback: null
-      };
-    });
-
-    const s3Steps = {};
-    STAGE_3_CONFIG.steps.forEach((step) => {
-      s3Steps[step.id] = {
-        selectedOption: null,
-        committedOption: null,
-        hintLevel: 0,
-        attempts: 0,
-        mastered: false,
-        feedback: null
-      };
-    });
-
+  function createFreshState() {
     return {
-      activeStage: 1,
-      learningEngineerView: false,
-      instructorUnlockedAll: false,
-      primerOpen: false,
-      lockNotice: null,
+      activeSection: 1,
+      attempts: 0,
+      hintsUsed: 0,
       misconceptions: {
         liquidity_blindness: 0,
         fraud_exposure: 0,
         reward_chasing: 0
       },
-      totalErrors: 0,
-      remediatedTypes: {
+      remediationsCompleted: {
         liquidity_blindness: false,
         fraud_exposure: false,
         reward_chasing: false
       },
-      activeRemediation: null,
-      stage1: {
-        items: s1Items,
-        mastered: false
+      section1: {
+        activeTab: 'cost',
+        visitedTabs: { cost: false, convenience: false, security: false, budgeting: false },
+        chunk2Revealed: false,
+        flippedCards: { pain: false, deferred: false, awareness: false },
+        visitedCards: { pain: false, deferred: false, awareness: false },
+        completed: false
       },
-      stage2: {
-        steps: s2Steps,
-        mastered: false
+      section2: {
+        currentIndex: 0,
+        cards: {
+          s1: { selected: null, solved: false, hintLevel: 0 },
+          s2: { selected: null, solved: false, hintLevel: 0 },
+          s3: { selected: null, solved: false, hintLevel: 0 },
+          s4: { selected: null, solved: false, hintLevel: 0 },
+          s5: { selected: null, solved: false, hintLevel: 0 }
+        },
+        completed: false
       },
-      stage3: {
-        steps: s3Steps,
-        mastered: false,
-        hintsUsed: 0,
-        errorsCount: 0
+      section3: {
+        sceneIndex: 0,
+        scenes: {
+          c1: { selected: null, solved: false, hintLevel: 0 },
+          c2: { selected: null, solved: false, hintLevel: 0 },
+          c3: { selected: null, solved: false, hintLevel: 0 }
+        },
+        activeRemediation: null, // { type, selectedOpt, solved }
+        completed: false
+      },
+      section4: {
+        moveIndex: 0,
+        moves: {
+          m1: { selected: null, solved: false, hintLevel: 0 },
+          m2: { selected: null, solved: false, hintLevel: 0 },
+          m3: { selected: null, solved: false, hintLevel: 0 }
+        },
+        fadedHintsUsed: 0,
+        completed: false
       }
     };
   }
 
-  let state = createInitialState();
+  let state = loadState();
+  let mobileMenuOpen = false;
+  let lxdDrawerOpen = false;
 
-  /* ------------------------------------------------------------------------
-     6. Pure Ledger & Mastery Calculations
-     ------------------------------------------------------------------------ */
-
-  function isStageUnlocked(stageNum) {
-    if (stageNum === 1) return true;
-    if (state.instructorUnlockedAll) return true;
-    if (stageNum === 2) return state.stage1.mastered;
-    if (stageNum === 3) return state.stage1.mastered && state.stage2.mastered;
-    return false;
-  }
-
-  function countMasteredStages() {
-    return (
-      (state.stage1.mastered ? 1 : 0) +
-      (state.stage2.mastered ? 1 : 0) +
-      (state.stage3.mastered ? 1 : 0)
-    );
-  }
-
-  function computeStage2Ledger() {
-    let checking = STAGE_2_CONFIG.initialChecking;
-    let credit = STAGE_2_CONFIG.initialCredit;
-    let fraudRisk = "Low (Baseline)";
-    let fraudSeverity = "low";
-    let overdraftFees = 0;
-    const tape = [
-      { label: "Opening Balance", amount: "$240 Checking / $0 Credit" }
-    ];
-
-    STAGE_2_CONFIG.steps.forEach((stepCfg) => {
-      const st = state.stage2.steps[stepCfg.id];
-      if (!st.committedOption) return;
-      const opt = stepCfg.options.find((o) => o.id === st.committedOption);
-      if (!opt) return;
-
-      checking += opt.checkingDelta;
-      credit += opt.creditDelta;
-      tape.push({ label: opt.tapeLabel, amount: opt.tapeAmount });
-
-      if (opt.fraudSeverity === "severe") {
-        fraudSeverity = "severe";
-        fraudRisk = opt.fraudRisk;
-      } else if (opt.fraudSeverity === "elevated" && fraudSeverity !== "severe") {
-        fraudSeverity = "elevated";
-        fraudRisk = opt.fraudRisk;
-      } else if (fraudSeverity === "low") {
-        fraudRisk = opt.fraudRisk;
-      }
-    });
-
-    const allMastered = STAGE_2_CONFIG.steps.every(
-      (s) => state.stage2.steps[s.id].mastered
-    );
-
-    let pendingHold = STAGE_2_CONFIG.pendingAutoDebit;
-    let netSafeBuffer = checking - pendingHold;
-    let projectedOverdraft = false;
-
-    if (allMastered) {
-      // Settle 6:00 AM $120 Auto-Debit cleanly!
-      checking -= STAGE_2_CONFIG.pendingAutoDebit;
-      pendingHold = 0;
-      netSafeBuffer = checking;
-      tape.push({
-        label: "6:00 AM Streaming Auto-Debit Settled",
-        amount: "-$120 Checking"
-      });
-    } else {
-      if (checking < 0) {
-        overdraftFees = STAGE_2_CONFIG.overdraftFeeAmount;
-      } else if (checking - pendingHold < 0) {
-        projectedOverdraft = true;
-        overdraftFees = STAGE_2_CONFIG.overdraftFeeAmount;
-      }
+  function loadState() {
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) return createFreshState();
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed.activeSection !== 'number') return createFreshState();
+      return Object.assign(createFreshState(), parsed);
+    } catch (_) {
+      return createFreshState();
     }
-
-    return {
-      checking,
-      credit,
-      pendingHold,
-      netSafeBuffer,
-      fraudRisk,
-      fraudSeverity,
-      overdraftFees,
-      projectedOverdraft,
-      settled: allMastered,
-      tape
-    };
   }
 
-  function computeStage3Ledger() {
-    let checking = STAGE_3_CONFIG.initialChecking;
-    let credit = STAGE_3_CONFIG.initialCredit;
-    let fraudRisk = "Low (Baseline)";
-    let fraudSeverity = "low";
-    let overdraftFees = 0;
-    let settled = false;
-    const tape = [
-      { label: "Move-In Opening Balance", amount: "$210 Checking / $0 Credit" }
-    ];
-
-    STAGE_3_CONFIG.steps.forEach((stepCfg) => {
-      const st = state.stage3.steps[stepCfg.id];
-      if (!st.committedOption) return;
-      const opt = stepCfg.options.find((o) => o.id === st.committedOption);
-      if (!opt) return;
-
-      checking += opt.checkingDelta;
-      credit += opt.creditDelta;
-      tape.push({ label: opt.tapeLabel, amount: opt.tapeAmount });
-
-      if (opt.fraudSeverity === "severe") {
-        fraudSeverity = "severe";
-        fraudRisk = opt.fraudRisk;
-      } else if (opt.fraudSeverity === "elevated" && fraudSeverity !== "severe") {
-        fraudSeverity = "elevated";
-        fraudRisk = opt.fraudRisk;
-      } else if (fraudSeverity === "low") {
-        fraudRisk = opt.fraudRisk;
-      }
-    });
-
-    const step3Committed = state.stage3.steps["3"].committedOption;
-    const allMastered = STAGE_3_CONFIG.steps.every(
-      (s) => state.stage3.steps[s.id].mastered
-    );
-
-    // Settle 11:59 PM $130 Utility Draft once Transaction 3.3 is committed so consequence is real!
-    if (step3Committed || allMastered) {
-      settled = true;
-      checking -= STAGE_3_CONFIG.scheduledUtilityDraft;
-      tape.push({
-        label: "11:59 PM Electric Utility Draft",
-        amount: "-$130 Checking"
-      });
-      if (checking < 0) {
-        overdraftFees = STAGE_3_CONFIG.overdraftFeeAmount;
-        checking -= overdraftFees;
-        tape.push({
-          label: "Bank Overdraft Fee Assessed",
-          amount: "-$35 Fee"
-        });
-      }
-    } else if (checking - STAGE_3_CONFIG.scheduledUtilityDraft < 0 && state.stage3.steps["1"].committedOption) {
-      // Note: On raw bank app view before 11:59 PM, bank does NOT pre-subtract $130 until midnight batch!
-      // Only actual < $0 triggers immediate fee prior to 11:59 PM.
-      if (checking < 0) {
-        overdraftFees = STAGE_3_CONFIG.overdraftFeeAmount;
-      }
+  function saveState() {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (_) {
+      /* Ignore storage quota / private mode restrictions */
     }
-
-    return {
-      checking,
-      credit,
-      fraudRisk,
-      fraudSeverity,
-      overdraftFees,
-      settled,
-      tape
-    };
-  }
-
-  function formatDollar(num) {
-    const abs = Math.abs(num);
-    return (num < 0 ? "-$" : "$") + abs;
   }
 
   /* ------------------------------------------------------------------------
-     7. Misconception Tracking & Adaptive Remediation Routing
+     3. Progress Calculation & SVG Ring Helper
      ------------------------------------------------------------------------ */
 
-  function recordMisconceptions(tags) {
-    state.totalErrors += 1;
-    if (Array.isArray(tags) && tags.length > 0) {
-      tags.forEach((t) => {
-        if (Object.prototype.hasOwnProperty.call(state.misconceptions, t)) {
-          state.misconceptions[t] += 1;
+  function getLessonProgress(lessonId) {
+    if (lessonId === 1) {
+      if (state.section1.completed) return 1;
+      const tabsCount = Object.values(state.section1.visitedTabs).filter(Boolean).length;
+      const cardsCount = Object.values(state.section1.visitedCards).filter(Boolean).length;
+      const raw = (tabsCount / 4) * 0.45 + (state.section1.chunk2Revealed ? 0.15 : 0) + (cardsCount / 3) * 0.4;
+      return Math.min(0.95, raw);
+    }
+    if (lessonId === 2) {
+      if (state.section2.completed) return 1;
+      const solved = Object.values(state.section2.cards).filter((c) => c.solved).length;
+      return solved / SORTING_SCENARIOS.length;
+    }
+    if (lessonId === 3) {
+      if (state.section3.completed) return 1;
+      const solved = Object.values(state.section3.scenes).filter((s) => s.solved).length;
+      return solved / CARLOS_SCENES.length;
+    }
+    if (lessonId === 4) {
+      if (state.section4.completed) return 1;
+      const solved = Object.values(state.section4.moves).filter((m) => m.solved).length;
+      return solved / MAYA_MOVES.length;
+    }
+    return 0;
+  }
+
+  function getOverallPercent() {
+    const sum =
+      getLessonProgress(1) +
+      getLessonProgress(2) +
+      getLessonProgress(3) +
+      getLessonProgress(4);
+    return Math.round((sum / 4) * 100);
+  }
+
+  function renderProgressRingSVG(progress) {
+    if (progress >= 0.999) {
+      return `
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+          <circle cx="9" cy="9" r="8.5" fill="#FF631E"></circle>
+          <path d="M5.2 9.3L7.8 11.8L13 6.5" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      `;
+    }
+    const radius = 7.2;
+    const circumference = 2 * Math.PI * radius;
+    const clamped = Math.max(0, Math.min(1, progress));
+    const dashOffset = circumference * (1 - clamped);
+    return `
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+        <circle cx="9" cy="9" r="${radius}" fill="none" stroke="#D5DAE0" stroke-width="2"></circle>
+        ${
+          clamped > 0.02
+            ? `<circle cx="9" cy="9" r="${radius}" fill="none" stroke="#FF631E" stroke-width="2.2"
+                stroke-dasharray="${circumference.toFixed(2)}"
+                stroke-dashoffset="${dashOffset.toFixed(2)}"
+                transform="rotate(-90 9 9)" stroke-linecap="round"></circle>`
+            : ''
         }
-      });
-    }
+      </svg>
+    `;
   }
-
-  function pickDominantMisconception(preferredTags) {
-    const keys = ["liquidity_blindness", "fraud_exposure", "reward_chasing"];
-    // First prefer an un-remediated tag from the current error's tags if tied or urgent
-    if (Array.isArray(preferredTags)) {
-      for (const t of preferredTags) {
-        if (!state.remediatedTypes[t]) {
-          return t;
-        }
-      }
-    }
-    // Otherwise pick the un-remediated misconception with highest count > 0
-    let bestKey = null;
-    let bestCount = 0;
-    keys.forEach((k) => {
-      if (!state.remediatedTypes[k] && state.misconceptions[k] > bestCount) {
-        bestCount = state.misconceptions[k];
-        bestKey = k;
-      }
-    });
-    return bestKey;
-  }
-
-  function maybeTriggerRemediation(options) {
-    const { preferredTags = [], stage2SevereEvent = false } = options || {};
-    if (state.activeRemediation && !state.activeRemediation.isPreview) {
-      return;
-    }
-
-    const shouldCheck = state.totalErrors >= 2 || stage2SevereEvent;
-    if (!shouldCheck) return;
-
-    const targetKey = pickDominantMisconception(preferredTags);
-    if (!targetKey) return;
-
-    state.activeRemediation = {
-      type: targetKey,
-      isPreview: false,
-      selectedOption: null,
-      verified: false,
-      feedback: null
-    };
-
-    renderAll();
-    const shell = document.getElementById("remediation-shell");
-    if (shell) {
-      shell.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }
-
-  function openRemediationPreview(typeKey) {
-    if (!REMEDIATION_TASKS[typeKey]) return;
-    state.activeRemediation = {
-      type: typeKey,
-      isPreview: true,
-      selectedOption: null,
-      verified: false,
-      feedback: null
-    };
-    renderAll();
-    const shell = document.getElementById("remediation-shell");
-    if (shell) {
-      shell.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }
-
-  /* ------------------------------------------------------------------------
-     8. Event Handlers & Actions
-     ------------------------------------------------------------------------ */
-
-  function setStage(stageNum) {
-    if (!isStageUnlocked(stageNum)) {
-      const prereq = stageNum === 2 ? "Stage 1 (4/4 scenarios)" : "Stages 1 and 2";
-      state.lockNotice = `Complete ${prereq} first to unlock Stage ${stageNum} mastery progression—or toggle "Learning Engineer View" in the top bar and click "Unlock All Stages (Inspect)" to preview directly.`;
-      renderAll();
-      return;
-    }
-    state.lockNotice = null;
-    state.activeStage = stageNum;
-
-    // Fading rule: collapse Reference Matrix automatically upon entering Stage 3
-    if (stageNum === 3) {
-      state.primerOpen = false;
-    }
-    renderAll();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function handleStage1Check(itemId) {
-    const itemCfg = STAGE_1_ITEMS.find((i) => i.id === itemId);
-    const itemState = state.stage1.items[itemId];
-    if (!itemCfg || !itemState || itemState.mastered) return;
-    if (!itemState.selectedMethod || !itemState.selectedFactor) return;
-
-    const pairKey = `${itemState.selectedMethod}:${itemState.selectedFactor}`;
-    const result = itemCfg.diagnose(itemState.selectedMethod, itemState.selectedFactor);
-
-    if (result.ok) {
-      itemState.attempts += 1;
-      itemState.mastered = true;
-      itemState.lastCheckedKey = pairKey;
-      itemState.feedback = result;
-
-      state.stage1.mastered = STAGE_1_ITEMS.every(
-        (i) => state.stage1.items[i.id].mastered
-      );
-      renderAll();
-      return;
-    }
-
-    // Avoid double-incrementing counters if user clicks Check repeatedly without changing selection
-    const isNewAttemptPair = itemState.lastCheckedKey !== pairKey;
-    itemState.lastCheckedKey = pairKey;
-    if (isNewAttemptPair) {
-      itemState.attempts += 1;
-      recordMisconceptions(result.misconceptions || []);
-    }
-
-    let bodyText = result.body;
-    if (itemState.attempts >= 2) {
-      bodyText +=
-        " (Tip: Open the next Hint level below if you want a concrete check before revising your pairing.)";
-    }
-
-    itemState.feedback = {
-      ok: false,
-      tone: result.tone,
-      title: `${result.title} · Attempt ${itemState.attempts}`,
-      body: bodyText
-    };
-
-    renderAll();
-    if (isNewAttemptPair) {
-      maybeTriggerRemediation({
-        preferredTags: result.misconceptions || [],
-        stage2SevereEvent: false
-      });
-    }
-  }
-
-  function handleStage2Commit(stepId) {
-    const stepCfg = STAGE_2_CONFIG.steps.find((s) => s.id === stepId);
-    const stepState = state.stage2.steps[stepId];
-    if (!stepCfg || !stepState || stepState.mastered || !stepState.selectedOption) return;
-
-    const opt = stepCfg.options.find((o) => o.id === stepState.selectedOption);
-    if (!opt) return;
-
-    stepState.committedOption = opt.id;
-    stepState.attempts += 1;
-
-    if (opt.optimal) {
-      stepState.mastered = true;
-      stepState.feedback = {
-        ok: true,
-        tone: opt.feedbackTone,
-        title: opt.feedbackTitle,
-        body: opt.feedbackBody
-      };
-      state.stage2.mastered = STAGE_2_CONFIG.steps.every(
-        (s) => state.stage2.steps[s.id].mastered
-      );
-      renderAll();
-      return;
-    }
-
-    stepState.mastered = false;
-    stepState.feedback = {
-      ok: false,
-      tone: opt.feedbackTone,
-      title: `${opt.feedbackTitle} · Attempt ${stepState.attempts}`,
-      body: opt.feedbackBody
-    };
-
-    recordMisconceptions(opt.misconceptions || []);
-    const ledgerAfter = computeStage2Ledger();
-    const severeTrigger =
-      ledgerAfter.overdraftFees > 0 ||
-      ledgerAfter.projectedOverdraft ||
-      opt.fraudSeverity === "elevated" ||
-      opt.fraudSeverity === "severe";
-
-    renderAll();
-    maybeTriggerRemediation({
-      preferredTags: opt.misconceptions || [],
-      stage2SevereEvent: severeTrigger
-    });
-  }
-
-  function handleStage2Revise(stepId) {
-    if (state.activeRemediation && !state.activeRemediation.isPreview && !state.activeRemediation.verified) {
-      const shell = document.getElementById("remediation-shell");
-      if (shell) shell.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      return;
-    }
-    const stepState = state.stage2.steps[stepId];
-    if (!stepState) return;
-    stepState.committedOption = null;
-    stepState.selectedOption = null;
-    stepState.feedback = null;
-    renderAll();
-  }
-
-  function handleStage3Commit(stepId) {
-    const stepCfg = STAGE_3_CONFIG.steps.find((s) => s.id === stepId);
-    const stepState = state.stage3.steps[stepId];
-    if (!stepCfg || !stepState || stepState.mastered || !stepState.selectedOption) return;
-
-    const opt = stepCfg.options.find((o) => o.id === stepState.selectedOption);
-    if (!opt) return;
-
-    stepState.committedOption = opt.id;
-    stepState.attempts += 1;
-
-    if (opt.optimal) {
-      stepState.mastered = true;
-      stepState.feedback = {
-        ok: true,
-        tone: opt.feedbackTone,
-        title: opt.feedbackTitle,
-        body: opt.feedbackBody
-      };
-      state.stage3.mastered = STAGE_3_CONFIG.steps.every(
-        (s) => state.stage3.steps[s.id].mastered
-      );
-      renderAll();
-      return;
-    }
-
-    state.stage3.errorsCount += 1;
-    recordMisconceptions(opt.misconceptions || []);
-    stepState.mastered = false;
-    stepState.feedback = {
-      ok: false,
-      tone: opt.feedbackTone,
-      title: `${opt.feedbackTitle} · Attempt ${stepState.attempts}`,
-      body: opt.feedbackBody
-    };
-    renderAll();
-  }
-
-  function handleStage3Revise(stepId) {
-    const stepState = state.stage3.steps[stepId];
-    if (!stepState) return;
-    stepState.committedOption = null;
-    stepState.selectedOption = null;
-    stepState.feedback = null;
-    renderAll();
-  }
-
-  /* ------------------------------------------------------------------------
-     9. DOM Rendering Functions (Clean Deterministic Templates & Unique IDs)
-     ------------------------------------------------------------------------ */
 
   function escapeHtml(str) {
     return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
-  function renderHeaderAndNav() {
-    const masteredCount = countMasteredStages();
-    const readout = document.getElementById("mastery-readout");
-    if (readout) {
-      readout.textContent = `Mastery: ${masteredCount} / 3 Stages`;
-    }
-
-    const lxdBtn = document.getElementById("btn-toggle-lxd");
-    if (lxdBtn) {
-      lxdBtn.setAttribute("aria-pressed", state.learningEngineerView ? "true" : "false");
-    }
-    document.body.classList.toggle("lxd-active", state.learningEngineerView);
-
-    // Primer state
-    const primerBtn = document.getElementById("btn-toggle-primer");
-    const primerLabel = document.getElementById("primer-btn-label");
-    const primerDrawer = document.getElementById("primer-drawer");
-    const fadedNote = document.getElementById("primer-faded-note");
-
-    if (primerBtn && primerLabel && primerDrawer) {
-      primerBtn.setAttribute("aria-expanded", state.primerOpen ? "true" : "false");
-      primerLabel.textContent = state.primerOpen
-        ? "Hide 4-Dimension Payment Reference Matrix"
-        : "Show 4-Dimension Payment Reference Matrix";
-      primerDrawer.hidden = !state.primerOpen;
-    }
-    if (fadedNote) {
-      fadedNote.hidden = !(state.activeStage === 3 && !state.primerOpen);
-    }
-
-    // LXD Live Telemetry Chips
-    const chipsEl = document.getElementById("lxd-telemetry-chips");
-    if (chipsEl) {
-      const scaffoldMode =
-        state.activeStage === 3
-          ? "faded"
-          : state.activeStage === 2
-          ? "guided_ledger"
-          : "channeling_full";
-      chipsEl.innerHTML = `
-        <span class="telemetry-chip">liquidity_blindness: ${state.misconceptions.liquidity_blindness}</span>
-        <span class="telemetry-chip">fraud_exposure: ${state.misconceptions.fraud_exposure}</span>
-        <span class="telemetry-chip">reward_chasing: ${state.misconceptions.reward_chasing}</span>
-        <span class="telemetry-chip">totalErrors: ${state.totalErrors}</span>
-        <span class="telemetry-chip">scaffoldMode: "${scaffoldMode}"</span>
-      `;
-    }
-
-    // Stage Tabs
-    const s1MasteredItems = STAGE_1_ITEMS.filter(
-      (i) => state.stage1.items[i.id].mastered
-    ).length;
-    const s2MasteredSteps = STAGE_2_CONFIG.steps.filter(
-      (s) => state.stage2.steps[s.id].mastered
-    ).length;
-    const s3MasteredSteps = STAGE_3_CONFIG.steps.filter(
-      (s) => state.stage3.steps[s.id].mastered
-    ).length;
-
-    const tabConfigs = [
-      {
-        num: 1,
-        tabId: "tab-stage-1",
-        badgeId: "badge-stage-1",
-        mastered: state.stage1.mastered,
-        badgeText: state.stage1.mastered ? "Mastered" : `${s1MasteredItems} / 4 Mastered`
-      },
-      {
-        num: 2,
-        tabId: "tab-stage-2",
-        badgeId: "badge-stage-2",
-        mastered: state.stage2.mastered,
-        badgeText: state.stage2.mastered
-          ? "Mastered"
-          : isStageUnlocked(2)
-          ? `${s2MasteredSteps} / 3 Steps`
-          : "Locked"
-      },
-      {
-        num: 3,
-        tabId: "tab-stage-3",
-        badgeId: "badge-stage-3",
-        mastered: state.stage3.mastered,
-        badgeText: state.stage3.mastered
-          ? "Mastered"
-          : isStageUnlocked(3)
-          ? `${s3MasteredSteps} / 3 Steps`
-          : "Locked"
-      }
-    ];
-
-    tabConfigs.forEach((cfg) => {
-      const tab = document.getElementById(cfg.tabId);
-      const badge = document.getElementById(cfg.badgeId);
-      const unlocked = isStageUnlocked(cfg.num);
-      if (tab) {
-        tab.classList.toggle("is-active", state.activeStage === cfg.num);
-        tab.classList.toggle("is-locked", !unlocked);
-        if (state.activeStage === cfg.num) {
-          tab.setAttribute("aria-current", "step");
-        } else {
-          tab.removeAttribute("aria-current");
-        }
-      }
-      if (badge) {
-        badge.textContent = cfg.badgeText;
-        badge.classList.toggle("is-mastered", cfg.mastered);
-      }
-    });
-
-    // Lock Notice
-    const lockEl = document.getElementById("stage-lock-notice");
-    if (lockEl) {
-      if (state.lockNotice) {
-        lockEl.textContent = state.lockNotice;
-        lockEl.hidden = false;
-      } else {
-        lockEl.hidden = true;
-      }
-    }
-
-    // Active Stage Panel visibility
-    document.getElementById("stage-1-panel").hidden = state.activeStage !== 1;
-    document.getElementById("stage-2-panel").hidden = state.activeStage !== 2;
-    document.getElementById("stage-3-panel").hidden = state.activeStage !== 3;
-  }
-
-  function renderRemediation() {
-    const shell = document.getElementById("remediation-shell");
-    if (!shell) return;
-
-    if (!state.activeRemediation) {
-      shell.hidden = true;
-      shell.innerHTML = "";
-      return;
-    }
-
-    const rem = state.activeRemediation;
-    const task = REMEDIATION_TASKS[rem.type];
-    if (!task) {
-      shell.hidden = true;
-      return;
-    }
-
-    shell.hidden = false;
-    const optionsHtml = task.options
-      .map((opt) => {
-        const selected = rem.selectedOption === opt.id;
-        return `
-          <button
-            id="btn-rem-opt-${opt.id}"
-            type="button"
-            class="option-btn ${selected ? "is-selected" : ""}"
-            data-rem-opt="${opt.id}"
-            ${rem.verified ? "disabled" : ""}
-          >
-            <span class="option-radio-dot" aria-hidden="true"></span>
-            <span><span class="option-label-main">${escapeHtml(opt.label)}</span></span>
-          </button>
-        `;
-      })
-      .join("");
-
-    const feedbackHtml = rem.feedback
-      ? `
-        <div class="diagnostic-box ${rem.feedback.ok ? "is-mastery" : "is-caution"}">
-          <span class="diagnostic-title">${rem.feedback.ok ? "Remediation Check Verified" : "Diagnostic Check — Re-examine the Numbers"}</span>
-          <p>${escapeHtml(rem.feedback.text)}</p>
-        </div>
-      `
-      : "";
-
-    shell.innerHTML = `
-      <div class="remediation-card">
-        <div class="remediation-banner">
-          <span class="remediation-eyebrow">${escapeHtml(task.badge)}${rem.isPreview ? " · Instructor Preview" : ""}</span>
-          ${
-            rem.isPreview
-              ? `<button id="btn-rem-close-preview" type="button" class="btn-secondary">Close Preview</button>`
-              : `<span class="mono-num">Adaptive Mastery Gate</span>`
-          }
-        </div>
-        <h3>${escapeHtml(task.heading)}</h3>
-        <p class="card-narrative">${escapeHtml(task.whyTriggered)}</p>
-
-        <div class="remediation-contrast-grid">
-          <div class="contrast-box is-trap">
-            <span class="contrast-label">${escapeHtml(task.trapTitle)}</span>
-            <p>${escapeHtml(task.trapBody)}</p>
-          </div>
-          <div class="contrast-box is-sound">
-            <span class="contrast-label">${escapeHtml(task.soundTitle)}</span>
-            <p>${escapeHtml(task.soundBody)}</p>
-          </div>
-        </div>
-
-        <fieldset class="choice-fieldset">
-          <legend class="choice-legend">${escapeHtml(task.question)}</legend>
-          <div class="choice-stack">
-            ${optionsHtml}
-          </div>
-        </fieldset>
-
-        ${feedbackHtml}
-
-        <div class="card-actions">
-          <div class="card-actions-left">
-            ${
-              !rem.verified
-                ? `<button id="btn-rem-verify" type="button" class="btn-primary" ${!rem.selectedOption ? "disabled" : ""}>Verify Micro-Task Answer</button>`
-                : `<button id="btn-rem-return" type="button" class="btn-primary">${rem.isPreview ? "Done Inspecting Micro-Task" : "Return & Apply Repaired Strategy →"}</button>`
-            }
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Bind Remediation Listeners
-    shell.querySelectorAll("[data-rem-opt]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        if (state.activeRemediation.verified) return;
-        state.activeRemediation.selectedOption = btn.getAttribute("data-rem-opt");
-        renderRemediation();
-      });
-    });
-
-    const verifyBtn = document.getElementById("btn-rem-verify");
-    if (verifyBtn) {
-      verifyBtn.addEventListener("click", () => {
-        const chosen = task.options.find((o) => o.id === rem.selectedOption);
-        if (!chosen) return;
-        if (chosen.correct) {
-          rem.verified = true;
-          if (!rem.isPreview) {
-            state.remediatedTypes[rem.type] = true;
-          }
-          rem.feedback = { ok: true, text: chosen.feedback };
-        } else {
-          rem.feedback = { ok: false, text: chosen.feedback };
-        }
-        renderRemediation();
-      });
-    }
-
-    const returnBtn = document.getElementById("btn-rem-return");
-    if (returnBtn) {
-      returnBtn.addEventListener("click", () => {
-        state.activeRemediation = null;
-        renderAll();
-      });
-    }
-
-    const closePreviewBtn = document.getElementById("btn-rem-close-preview");
-    if (closePreviewBtn) {
-      closePreviewBtn.addEventListener("click", () => {
-        state.activeRemediation = null;
-        renderAll();
-      });
-    }
-  }
-
-  function renderHintsStack(hints, unlockedCount) {
-    if (!unlockedCount || unlockedCount <= 0) return "";
-    const labels = [
-      "Hint Level 1 / 3 · Metacognitive Prompt",
-      "Hint Level 2 / 3 · Conceptual Trade-Off Cue",
-      "Hint Level 3 / 3 · Concrete Protection & Liquidity Check"
-    ];
-    const items = [];
-    for (let i = 0; i < unlockedCount && i < hints.length; i += 1) {
-      items.push(`
-        <div class="hint-box">
-          <span class="hint-level-label">${labels[i]}</span>
-          <p>${escapeHtml(hints[i])}</p>
-        </div>
-      `);
-    }
-    return `<div class="hint-stack">${items.join("")}</div>`;
-  }
-
-  function renderDiagnosticBox(feedback) {
-    if (!feedback) return "";
-    const toneClass =
-      feedback.tone === "mastery"
-        ? "is-mastery"
-        : feedback.tone === "alert"
-        ? "is-alert"
-        : "is-caution";
-    return `
-      <div class="diagnostic-box ${toneClass}" role="status" aria-live="polite">
-        <span class="diagnostic-title">${escapeHtml(feedback.title)}</span>
-        <p>${escapeHtml(feedback.body)}</p>
-      </div>
-    `;
-  }
-
-  function renderStage1() {
-    const mount = document.getElementById("stage-1-cards");
-    if (!mount) return;
-
-    mount.innerHTML = STAGE_1_ITEMS.map((item) => {
-      const st = state.stage1.items[item.id];
-      const statusClass = st.mastered
-        ? "status-mastered"
-        : st.attempts > 0
-        ? "status-revise"
-        : "";
-      const statusText = st.mastered
-        ? "Mastered"
-        : st.attempts > 0
-        ? `Attempt ${st.attempts} · Revise Pairing`
-        : "Unchecked";
-
-      const methodBtns = PAYMENT_METHODS.map((m) => {
-        const selected = st.selectedMethod === m.id;
-        return `
-          <button
-            id="btn-s1-${item.id}-method-${m.id}"
-            type="button"
-            class="option-btn ${selected ? "is-selected" : ""}"
-            data-s1-item="${item.id}"
-            data-s1-method="${m.id}"
-            ${st.mastered ? "disabled" : ""}
-          >
-            <span class="option-radio-dot" aria-hidden="true"></span>
-            <span>
-              <span class="option-label-main">${escapeHtml(m.label)}</span>
-              <span class="option-label-sub">${escapeHtml(m.sub)}</span>
-            </span>
-          </button>
-        `;
-      }).join("");
-
-      const factorBtns = item.factors
-        .map((f) => {
-          const selected = st.selectedFactor === f.id;
-          return `
-            <button
-              id="btn-s1-${item.id}-factor-${f.id}"
-              type="button"
-              class="option-btn ${selected ? "is-selected" : ""}"
-              data-s1-item="${item.id}"
-              data-s1-factor="${f.id}"
-              ${st.mastered ? "disabled" : ""}
-            >
-              <span class="option-radio-dot" aria-hidden="true"></span>
-              <span>
-                <span class="option-label-main">${escapeHtml(f.label)}</span>
-                <span class="option-label-sub">${escapeHtml(f.sub)}</span>
-              </span>
-            </button>
-          `;
-        })
-        .join("");
-
-      const canCheck = Boolean(st.selectedMethod && st.selectedFactor && !st.mastered);
-
-      return `
-        <article class="decision-card ${st.mastered ? "is-mastered" : ""}">
-          <div class="card-top-row">
-            <div class="card-step-meta">
-              <span class="step-id-tag">${escapeHtml(item.stepLabel)}</span>
-              <span class="scaffold-tag">${escapeHtml(item.scaffoldTag)}</span>
-            </div>
-            <span class="status-tag ${statusClass}">${escapeHtml(statusText)}</span>
-          </div>
-
-          <h3>${escapeHtml(item.title)}</h3>
-          <p class="card-narrative">${escapeHtml(item.narrative)}</p>
-
-          <fieldset class="choice-fieldset">
-            <legend class="choice-legend">1. Select Best Payment Method</legend>
-            <div class="choice-grid-3">${methodBtns}</div>
-          </fieldset>
-
-          <fieldset class="choice-fieldset">
-            <legend class="choice-legend">2. Select Primary Trade-Off Factor</legend>
-            <div class="choice-grid-3">${factorBtns}</div>
-          </fieldset>
-
-          <div class="card-actions">
-            <div class="card-actions-left">
-              <button
-                id="btn-check-s1-${item.id}"
-                type="button"
-                class="btn-primary"
-                data-s1-check="${item.id}"
-                ${canCheck ? "" : "disabled"}
-              >${st.mastered ? "Pairing Mastered" : "Check Method + Trade-Off"}</button>
-              <button
-                id="btn-hint-s1-${item.id}"
-                type="button"
-                class="btn-secondary"
-                data-s1-hint="${item.id}"
-                ${st.hintLevel >= 3 || st.mastered ? "disabled" : ""}
-              >Request Hint (${st.hintLevel}/3)</button>
-            </div>
-          </div>
-
-          ${renderHintsStack(item.hints, st.hintLevel)}
-          ${renderDiagnosticBox(st.feedback)}
-        </article>
-      `;
-    }).join("");
-
-    // Bind Stage 1 events
-    mount.querySelectorAll("[data-s1-method]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-s1-item");
-        const m = btn.getAttribute("data-s1-method");
-        if (state.stage1.items[id].mastered) return;
-        state.stage1.items[id].selectedMethod = m;
-        renderStage1();
-      });
-    });
-
-    mount.querySelectorAll("[data-s1-factor]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-s1-item");
-        const f = btn.getAttribute("data-s1-factor");
-        if (state.stage1.items[id].mastered) return;
-        state.stage1.items[id].selectedFactor = f;
-        renderStage1();
-      });
-    });
-
-    mount.querySelectorAll("[data-s1-check]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        handleStage1Check(btn.getAttribute("data-s1-check"));
-      });
-    });
-
-    mount.querySelectorAll("[data-s1-hint]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-s1-hint");
-        const st = state.stage1.items[id];
-        if (st.hintLevel < 3) {
-          st.hintLevel += 1;
-          renderStage1();
-        }
-      });
-    });
-
-    const completeEl = document.getElementById("stage-1-complete");
-    if (completeEl) {
-      completeEl.hidden = !state.stage1.mastered;
-    }
-  }
-
-  function renderStage2() {
-    const stepsMount = document.getElementById("stage-2-steps");
-    const ledgerMount = document.getElementById("stage-2-ledger");
-    if (!stepsMount || !ledgerMount) return;
-
-    const ledger = computeStage2Ledger();
-
-    // Determine sequential unlock inside Stage 2
-    stepsMount.innerHTML = STAGE_2_CONFIG.steps
-      .map((step, idx) => {
-        const st = state.stage2.steps[step.id];
-        const prevMastered =
-          idx === 0 ? true : state.stage2.steps[STAGE_2_CONFIG.steps[idx - 1].id].mastered;
-        const lockedStep = !prevMastered;
-        const hasSuboptimalCommit = Boolean(st.committedOption && !st.mastered);
-        const remBlocking = Boolean(
-          state.activeRemediation &&
-            !state.activeRemediation.isPreview &&
-            !state.activeRemediation.verified
-        );
-
-        let statusText = "Queued";
-        let statusClass = "";
-        if (st.mastered) {
-          statusText = "Mastered";
-          statusClass = "status-mastered";
-        } else if (hasSuboptimalCommit) {
-          statusText = "Ledger Risk Triggered · Revise";
-          statusClass = "status-revise";
-        } else if (!lockedStep) {
-          statusText = "Active Step";
-        }
-
-        const optionsHtml = step.options
-          .map((opt) => {
-            const selected = st.selectedOption === opt.id;
-            const disabled = lockedStep || Boolean(st.committedOption);
-            return `
-              <button
-                id="btn-s2-${step.id}-opt-${opt.id}"
-                type="button"
-                class="option-btn ${selected ? "is-selected" : ""}"
-                data-s2-step="${step.id}"
-                data-s2-opt="${opt.id}"
-                ${disabled ? "disabled" : ""}
-              >
-                <span class="option-radio-dot" aria-hidden="true"></span>
-                <span>
-                  <span class="option-label-main">${escapeHtml(opt.label)}</span>
-                  <span class="option-label-sub">${escapeHtml(opt.sub)}</span>
-                </span>
-              </button>
-            `;
-          })
-          .join("");
-
-        let primaryActionBtn = "";
-        if (!st.committedOption) {
-          primaryActionBtn = `
-            <button
-              id="btn-commit-s2-${step.id}"
-              type="button"
-              class="btn-primary"
-              data-s2-commit="${step.id}"
-              ${lockedStep || !st.selectedOption ? "disabled" : ""}
-            >Commit Decision to Ledger</button>
-          `;
-        } else if (hasSuboptimalCommit) {
-          primaryActionBtn = remBlocking
-            ? `
-              <button
-                id="btn-focus-rem-s2-${step.id}"
-                type="button"
-                class="btn-primary"
-                data-s2-focus-rem="${step.id}"
-              >Complete Remediation Micro-Task Above to Revise ↑</button>
-            `
-            : `
-              <button
-                id="btn-revise-s2-${step.id}"
-                type="button"
-                class="btn-primary"
-                data-s2-revise="${step.id}"
-              >Rewind &amp; Revise Step 2.${step.id}</button>
-            `;
-        } else {
-          primaryActionBtn = `
-            <button
-              id="btn-commit-s2-${step.id}"
-              type="button"
-              class="btn-primary"
-              disabled
-            >Committed &amp; Verified</button>
-          `;
-        }
-
-        return `
-          <article class="decision-card ${st.mastered ? "is-mastered" : ""} ${lockedStep ? "is-locked-step" : ""}">
-            <div class="card-top-row">
-              <div class="card-step-meta">
-                <span class="step-id-tag">${escapeHtml(step.stepCode)}</span>
-                <span class="scaffold-tag">${escapeHtml(step.scaffoldTag)}</span>
-              </div>
-              <span class="status-tag ${statusClass}">${escapeHtml(statusText)}</span>
-            </div>
-
-            <h3>${escapeHtml(step.title)}</h3>
-            <p class="card-narrative">${escapeHtml(step.narrative)}</p>
-            ${
-              step.autopayAlert
-                ? `<div class="autopay-scaffold-alert"><strong>${escapeHtml(step.autopayAlert)}</strong></div>`
-                : ""
-            }
-
-            <fieldset class="choice-fieldset">
-              <legend class="choice-legend">Choose Carlos's Payment Action</legend>
-              <div class="choice-stack">${optionsHtml}</div>
-            </fieldset>
-
-            <div class="card-actions">
-              <div class="card-actions-left">
-                ${primaryActionBtn}
-                <button
-                  id="btn-hint-s2-${step.id}"
-                  type="button"
-                  class="btn-secondary"
-                  data-s2-hint="${step.id}"
-                  ${lockedStep || st.hintLevel >= 3 || st.mastered ? "disabled" : ""}
-                >Request Hint (${st.hintLevel}/3)</button>
-              </div>
-            </div>
-
-            ${renderHintsStack(step.hints, st.hintLevel)}
-            ${renderDiagnosticBox(st.feedback)}
-          </article>
-        `;
-      })
-      .join("");
-
-    // Bind Stage 2 step listeners
-    stepsMount.querySelectorAll("[data-s2-opt]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const stepId = btn.getAttribute("data-s2-step");
-        const optId = btn.getAttribute("data-s2-opt");
-        if (state.stage2.steps[stepId].committedOption) return;
-        state.stage2.steps[stepId].selectedOption = optId;
-        renderStage2();
-      });
-    });
-
-    stepsMount.querySelectorAll("[data-s2-commit]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        handleStage2Commit(btn.getAttribute("data-s2-commit"));
-      });
-    });
-
-    stepsMount.querySelectorAll("[data-s2-revise]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        handleStage2Revise(btn.getAttribute("data-s2-revise"));
-      });
-    });
-
-    stepsMount.querySelectorAll("[data-s2-focus-rem]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const shell = document.getElementById("remediation-shell");
-        if (shell) shell.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      });
-    });
-
-    stepsMount.querySelectorAll("[data-s2-hint]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-s2-hint");
-        const st = state.stage2.steps[id];
-        if (st.hintLevel < 3) {
-          st.hintLevel += 1;
-          renderStage2();
-        }
-      });
-    });
-
-    // Render Stage 2 Live Account & Risk Ledger (With Focusing Scaffold!)
-    const checkingDanger = ledger.checking < 0 || ledger.netSafeBuffer < 0;
-    const fraudDanger = ledger.fraudSeverity !== "low";
-    const feeDanger = ledger.overdraftFees > 0;
-
-    const tapeHtml = ledger.tape
-      .map(
-        (entry) => `
-        <li class="tape-entry">
-          <span>${escapeHtml(entry.label)}</span>
-          <span>${escapeHtml(entry.amount)}</span>
-        </li>
-      `
-      )
-      .join("");
-
-    ledgerMount.innerHTML = `
-      <div class="ledger-header">
-        <div>
-          <span class="section-label">Carlos · Live Account &amp; Risk Ledger</span>
-          <h3>Guided Stateful Balance</h3>
-        </div>
-        <span class="scaffold-tag">Scaffolded</span>
-      </div>
-
-      <div class="ledger-rows">
-        <div class="ledger-row ${checkingDanger ? "is-danger" : ledger.settled ? "is-safe" : ""}">
-          <span class="ledger-key">Checking Cash</span>
-          <span class="ledger-val">${formatDollar(ledger.checking)}</span>
-        </div>
-
-        <div class="ledger-row">
-          <span class="ledger-key">Credit Balance</span>
-          <span class="ledger-val">${formatDollar(ledger.credit)}</span>
-        </div>
-
-        <div class="ledger-row">
-          <span class="ledger-key">Pending Auto-Debit Hold</span>
-          <span class="ledger-val">${ledger.settled ? "$0 (Settled 6:00 AM)" : "-$120 (6:00 AM)"}</span>
-        </div>
-
-        <div class="ledger-row is-scaffold-row ${ledger.netSafeBuffer < 0 ? "is-danger" : ""}">
-          <span class="ledger-key">Focusing Cue · Net Safe Checking</span>
-          <span class="ledger-val">${formatDollar(ledger.netSafeBuffer)}</span>
-        </div>
-
-        <div class="ledger-row ${fraudDanger ? "is-danger" : "is-safe"}">
-          <span class="ledger-key">Fraud Liability Risk</span>
-          <span class="ledger-val">${escapeHtml(ledger.fraudRisk)}</span>
-        </div>
-
-        <div class="ledger-row ${feeDanger ? "is-danger" : "is-safe"}">
-          <span class="ledger-key">Overdraft Fees ($35 if &lt; $0)</span>
-          <span class="ledger-val">${
-            ledger.overdraftFees > 0
-              ? ledger.projectedOverdraft
-                ? "$35 (Projected 6:00 AM)"
-                : "$35"
-              : "$0"
-          }</span>
-        </div>
-      </div>
-
-      <div class="ledger-tape">
-        <span class="section-label">Transaction Tape</span>
-        <ul class="tape-list">${tapeHtml}</ul>
-      </div>
-    `;
-
-    const completeEl = document.getElementById("stage-2-complete");
-    if (completeEl) {
-      completeEl.hidden = !state.stage2.mastered;
-    }
-  }
-
-  function renderStage3() {
-    const stepsMount = document.getElementById("stage-3-steps");
-    const ledgerMount = document.getElementById("stage-3-ledger");
-    if (!stepsMount || !ledgerMount) return;
-
-    const ledger = computeStage3Ledger();
-
-    // Notice: ZERO channeling tags and ZERO pre-highlighted auto-pay alert banners!
-    stepsMount.innerHTML = STAGE_3_CONFIG.steps
-      .map((step, idx) => {
-        const st = state.stage3.steps[step.id];
-        const prevMastered =
-          idx === 0 ? true : state.stage3.steps[STAGE_3_CONFIG.steps[idx - 1].id].mastered;
-        const lockedStep = !prevMastered;
-        const hasSuboptimalCommit = Boolean(st.committedOption && !st.mastered);
-
-        let statusText = "Queued";
-        let statusClass = "";
-        if (st.mastered) {
-          statusText = "Verified";
-          statusClass = "status-mastered";
-        } else if (hasSuboptimalCommit) {
-          statusText = "Revise Decision";
-          statusClass = "status-revise";
-        } else if (!lockedStep) {
-          statusText = "Active Transaction";
-        }
-
-        const optionsHtml = step.options
-          .map((opt) => {
-            const selected = st.selectedOption === opt.id;
-            const disabled = lockedStep || Boolean(st.committedOption);
-            return `
-              <button
-                id="btn-s3-${step.id}-opt-${opt.id}"
-                type="button"
-                class="option-btn ${selected ? "is-selected" : ""}"
-                data-s3-step="${step.id}"
-                data-s3-opt="${opt.id}"
-                ${disabled ? "disabled" : ""}
-              >
-                <span class="option-radio-dot" aria-hidden="true"></span>
-                <span>
-                  <span class="option-label-main">${escapeHtml(opt.label)}</span>
-                  <span class="option-label-sub">${escapeHtml(opt.sub)}</span>
-                </span>
-              </button>
-            `;
-          })
-          .join("");
-
-        let primaryBtn = "";
-        if (!st.committedOption) {
-          primaryBtn = `
-            <button
-              id="btn-commit-s3-${step.id}"
-              type="button"
-              class="btn-primary"
-              data-s3-commit="${step.id}"
-              ${lockedStep || !st.selectedOption ? "disabled" : ""}
-            >Commit Move-In Decision</button>
-          `;
-        } else if (hasSuboptimalCommit) {
-          primaryBtn = `
-            <button
-              id="btn-revise-s3-${step.id}"
-              type="button"
-              class="btn-primary"
-              data-s3-revise="${step.id}"
-            >Rewind &amp; Revise Transaction 3.${step.id}</button>
-          `;
-        } else {
-          primaryBtn = `
-            <button
-              id="btn-commit-s3-${step.id}"
-              type="button"
-              class="btn-primary"
-              disabled
-            >Transaction Verified</button>
-          `;
-        }
-
-        return `
-          <article class="decision-card ${st.mastered ? "is-mastered" : ""} ${lockedStep ? "is-locked-step" : ""}">
-            <div class="card-top-row">
-              <div class="card-step-meta">
-                <span class="step-id-tag">${escapeHtml(step.stepCode)}</span>
-              </div>
-              <span class="status-tag ${statusClass}">${escapeHtml(statusText)}</span>
-            </div>
-
-            <h3>${escapeHtml(step.title)}</h3>
-            <p class="card-narrative">${escapeHtml(step.narrative)}</p>
-
-            <fieldset class="choice-fieldset">
-              <legend class="choice-legend">Select Maya's Payment Action</legend>
-              <div class="choice-stack">${optionsHtml}</div>
-            </fieldset>
-
-            <div class="card-actions">
-              <div class="card-actions-left">
-                ${primaryBtn}
-                <button
-                  id="btn-hint-s3-${step.id}"
-                  type="button"
-                  class="btn-secondary"
-                  data-s3-hint="${step.id}"
-                  ${lockedStep || st.hintLevel >= 3 || st.mastered ? "disabled" : ""}
-                >Request Hint (${st.hintLevel}/3)</button>
-              </div>
-            </div>
-
-            ${renderHintsStack(step.hints, st.hintLevel)}
-            ${renderDiagnosticBox(st.feedback)}
-          </article>
-        `;
-      })
-      .join("");
-
-    // Bind Stage 3 events
-    stepsMount.querySelectorAll("[data-s3-opt]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const stepId = btn.getAttribute("data-s3-step");
-        const optId = btn.getAttribute("data-s3-opt");
-        if (state.stage3.steps[stepId].committedOption) return;
-        state.stage3.steps[stepId].selectedOption = optId;
-        renderStage3();
-      });
-    });
-
-    stepsMount.querySelectorAll("[data-s3-commit]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        handleStage3Commit(btn.getAttribute("data-s3-commit"));
-      });
-    });
-
-    stepsMount.querySelectorAll("[data-s3-revise]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        handleStage3Revise(btn.getAttribute("data-s3-revise"));
-      });
-    });
-
-    stepsMount.querySelectorAll("[data-s3-hint]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-s3-hint");
-        const st = state.stage3.steps[id];
-        if (st.hintLevel < 3) {
-          st.hintLevel += 1;
-          state.stage3.hintsUsed += 1;
-          renderStage3();
-        }
-      });
-    });
-
-    // Render Stage 3 Raw Bank View (Faded Ledger — NO Net Safe Checking row!)
-    const checkingDanger = ledger.checking < 0;
-    const fraudDanger = ledger.fraudSeverity !== "low";
-    const feeDanger = ledger.overdraftFees > 0;
-
-    const tapeHtml = ledger.tape
-      .map(
-        (entry) => `
-        <li class="tape-entry">
-          <span>${escapeHtml(entry.label)}</span>
-          <span>${escapeHtml(entry.amount)}</span>
-        </li>
-      `
-      )
-      .join("");
-
-    ledgerMount.innerHTML = `
-      <div class="ledger-header">
-        <div>
-          <span class="section-label">Maya · Raw Mobile Bank View</span>
-          <h3>Unscaffolded Account Statement</h3>
-        </div>
-        <span class="status-tag">Faded</span>
-      </div>
-
-      <div class="ledger-rows">
-        <div class="ledger-row ${checkingDanger ? "is-danger" : state.stage3.mastered ? "is-safe" : ""}">
-          <span class="ledger-key">Displayed Checking Balance</span>
-          <span class="ledger-val">${formatDollar(ledger.checking)}</span>
-        </div>
-
-        <div class="ledger-row">
-          <span class="ledger-key">Credit Card Statement</span>
-          <span class="ledger-val">${formatDollar(ledger.credit)}</span>
-        </div>
-
-        <div class="ledger-row">
-          <span class="ledger-key">Scheduled ACH Auto-Drafts</span>
-          <span class="ledger-val">${ledger.settled ? "Settled at 11:59 PM" : "Not Pre-Subtracted"}</span>
-        </div>
-
-        <div class="ledger-row ${fraudDanger ? "is-danger" : "is-safe"}">
-          <span class="ledger-key">Fraud Liability Exposure</span>
-          <span class="ledger-val">${escapeHtml(ledger.fraudRisk)}</span>
-        </div>
-
-        <div class="ledger-row ${feeDanger ? "is-danger" : "is-safe"}">
-          <span class="ledger-key">Overdraft Fees ($35 if &lt; $0)</span>
-          <span class="ledger-val">${formatDollar(ledger.overdraftFees)}</span>
-        </div>
-      </div>
-
-      <div class="ledger-tape">
-        <span class="section-label">Statement Activity</span>
-        <ul class="tape-list">${tapeHtml}</ul>
-      </div>
-    `;
-  }
-
-  function renderSynthesis() {
-    const panel = document.getElementById("synthesis-panel");
-    const lead = document.getElementById("synthesis-lead");
-    const grid = document.getElementById("synthesis-grid");
-    if (!panel || !lead || !grid) return;
-
-    const allThreeMastered =
-      state.stage1.mastered && state.stage2.mastered && state.stage3.mastered;
-    if (!allThreeMastered) {
-      panel.hidden = true;
-      return;
-    }
-
-    panel.hidden = false;
-    const unassistedTransfer =
-      state.stage3.hintsUsed === 0 && state.stage3.errorsCount === 0;
-
-    lead.textContent = unassistedTransfer
-      ? "You completed Stage 3 (Campus Move-In Week) with zero hints and zero errors after all channeling and focusing scaffolds were removed—demonstrating full self-regulated transfer across LO1–LO4."
-      : `You mastered all three stages and resolved Maya's Campus Move-In Week accounts safely ($60 Checking remaining after the 11:59 PM $130 utility draft, $0 overdraft fees) using ${state.stage3.hintsUsed} contingency hint(s).`;
-
-    const m = state.misconceptions;
-    const totalM = m.liquidity_blindness + m.fraud_exposure + m.reward_chasing;
-    const profileText =
-      totalM === 0
-        ? "Zero misconception triggers across all three stages—you consistently protected Checking buffers, isolated unverified merchants onto FCBA-protected credit, and rejected point-chasing float."
-        : `Session telemetry logged ${m.liquidity_blindness} liquidity-timing check(s), ${m.fraud_exposure} dispute-exposure check(s), and ${m.reward_chasing} reward-psychology check(s)—all repaired and verified in Stage 3 transfer.`;
-
-    grid.innerHTML = `
-      <div class="synthesis-box">
-        <span class="section-label">Transfer Telemetry</span>
-        <h3>${unassistedTransfer ? "Unassisted Independent Transfer" : "Verified Mastery with Contingency Support"}</h3>
-        <p class="card-narrative">${escapeHtml(profileText)}</p>
-      </div>
-      <div class="synthesis-box">
-        <span class="section-label">4-Rule Campus Payment Checklist (LO1–LO4)</span>
-        <h3>Takeaway Rules for Real Accounts</h3>
-        <p class="card-narrative">
-          1. Subtract upcoming ACH auto-pays &amp; fuel holds from Checking before swiping Debit.<br>
-          2. Never send Mobile P2P pushes to unverified sellers; use Credit FCBA protection.<br>
-          3. Settle exact peer shares on the spot via bank-linked P2P rather than floating IOUs for 2% points.<br>
-          4. Use dedicated Debit sub-accounts when curbing everyday impulse drift.
-        </p>
-      </div>
-    `;
-  }
-
-  function renderAll() {
-    renderHeaderAndNav();
-    renderRemediation();
-    renderStage1();
-    renderStage2();
-    renderStage3();
-    renderSynthesis();
+  function formatSignedDollar(amount) {
+    if (amount < 0) return `-$${Math.abs(amount)}`;
+    return `$${amount}`;
   }
 
   /* ------------------------------------------------------------------------
-     10. Static Control Bindings & Initialization
+     4. Shell Rendering (Sidebar, Progress, LXD Telemetry)
      ------------------------------------------------------------------------ */
 
-  function bindStaticControls() {
-    const lxdBtn = document.getElementById("btn-toggle-lxd");
-    if (lxdBtn) {
-      lxdBtn.addEventListener("click", () => {
-        state.learningEngineerView = !state.learningEngineerView;
-        renderAll();
-      });
+  function renderSidebarAndChrome() {
+    const pct = getOverallPercent();
+    const fillEl = document.getElementById('sidebar-progress-fill');
+    const barEl = document.getElementById('sidebar-progress-bar');
+    const textEl = document.getElementById('sidebar-progress-text');
+    const mobileBadge = document.getElementById('mobile-progress-badge');
+
+    if (fillEl) fillEl.style.width = `${pct}%`;
+    if (barEl) barEl.setAttribute('aria-valuenow', String(pct));
+    if (textEl) textEl.textContent = `${pct}% COMPLETE`;
+    if (mobileBadge) mobileBadge.textContent = `${pct}%`;
+
+    const navEl = document.getElementById('sidebar-nav');
+    if (navEl) {
+      navEl.innerHTML = LESSONS_META.map((lesson) => {
+        const prog = getLessonProgress(lesson.id);
+        const activeClass = state.activeSection === lesson.id ? ' is-active' : '';
+        const statusText = prog >= 0.999 ? 'Completed' : prog > 0.02 ? 'In progress' : 'Not started';
+        return `
+          <button
+            type="button"
+            id="nav-lesson-${lesson.id}"
+            class="sidebar-lesson-btn${activeClass}"
+            data-nav-lesson="${lesson.id}"
+            aria-current="${state.activeSection === lesson.id ? 'page' : 'false'}"
+            aria-label="${escapeHtml(lesson.navTitle)} (${statusText})"
+          >
+            <span class="sidebar-lesson-ring">${renderProgressRingSVG(prog)}</span>
+            <span class="sidebar-lesson-text">${escapeHtml(lesson.navTitle)}</span>
+          </button>
+        `;
+      }).join('');
     }
 
-    const primerBtn = document.getElementById("btn-toggle-primer");
-    if (primerBtn) {
-      primerBtn.addEventListener("click", () => {
-        state.primerOpen = !state.primerOpen;
-        renderHeaderAndNav();
-      });
-    }
-
-    document.getElementById("tab-stage-1").addEventListener("click", () => setStage(1));
-    document.getElementById("tab-stage-2").addEventListener("click", () => setStage(2));
-    document.getElementById("tab-stage-3").addEventListener("click", () => setStage(3));
-
-    document.getElementById("btn-goto-stage-2").addEventListener("click", () => setStage(2));
-    document.getElementById("btn-goto-stage-3").addEventListener("click", () => setStage(3));
-
-    // LXD Inspector Controls
-    document
-      .getElementById("btn-preview-rem-liquidity")
-      .addEventListener("click", () => openRemediationPreview("liquidity_blindness"));
-    document
-      .getElementById("btn-preview-rem-fraud")
-      .addEventListener("click", () => openRemediationPreview("fraud_exposure"));
-    document
-      .getElementById("btn-preview-rem-rewards")
-      .addEventListener("click", () => openRemediationPreview("reward_chasing"));
-
-    document.getElementById("btn-lxd-unlock-stages").addEventListener("click", () => {
-      state.instructorUnlockedAll = true;
-      state.lockNotice = null;
-      renderAll();
-    });
-
-    const resetHandler = () => {
-      const keepLxd = state.learningEngineerView;
-      state = createInitialState();
-      state.learningEngineerView = keepLxd;
-      renderAll();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    };
-
-    document.getElementById("btn-reset-all").addEventListener("click", resetHandler);
-    document.getElementById("btn-reset-synthesis").addEventListener("click", resetHandler);
+    renderLxdTelemetry(pct);
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    bindStaticControls();
-    renderAll();
+  function renderLxdTelemetry(pct) {
+    const panel = document.getElementById('lxd-telemetry-panel');
+    if (!panel) return;
+    const scaffoldsFaded = state.activeSection === 4;
+    const remDoneCount = Object.values(state.remediationsCompleted).filter(Boolean).length;
+    panel.innerHTML = `
+      <div class="telemetry-stat">
+        <span>Active Section</span>
+        <strong>Lesson ${state.activeSection} of 4 (${pct}%)</strong>
+      </div>
+      <div class="telemetry-stat">
+        <span>Scaffolds Faded</span>
+        <strong>${scaffoldsFaded ? 'true (Raw Bank)' : 'false (Guided)'}</strong>
+      </div>
+      <div class="telemetry-stat">
+        <span>Total Attempts</span>
+        <strong>${state.attempts}</strong>
+      </div>
+      <div class="telemetry-stat">
+        <span>Hints Requested</span>
+        <strong>${state.hintsUsed} (Solo: ${state.section4.fadedHintsUsed})</strong>
+      </div>
+      <div class="telemetry-stat">
+        <span>Liquidity Blindness</span>
+        <strong>${state.misconceptions.liquidity_blindness}</strong>
+      </div>
+      <div class="telemetry-stat">
+        <span>Fraud Exposure</span>
+        <strong>${state.misconceptions.fraud_exposure}</strong>
+      </div>
+      <div class="telemetry-stat">
+        <span>Reward Chasing</span>
+        <strong>${state.misconceptions.reward_chasing}</strong>
+      </div>
+      <div class="telemetry-stat">
+        <span>Quick-Fixes Solved</span>
+        <strong>${remDoneCount} / 3</strong>
+      </div>
+    `;
+  }
+
+  /* ------------------------------------------------------------------------
+     5. Section Renderers (1, 2, 3, 4)
+     ------------------------------------------------------------------------ */
+
+  function renderActiveSection() {
+    const container = document.getElementById('lesson-container');
+    if (!container) return;
+
+    const isCompact = state.activeSection >= 2;
+    container.className = isCompact ? 'lesson-column is-compact-lesson' : 'lesson-column';
+
+    if (state.activeSection === 1) {
+      container.innerHTML = buildSection1Html();
+    } else if (state.activeSection === 2) {
+      container.innerHTML = buildSection2Html();
+    } else if (state.activeSection === 3) {
+      container.innerHTML = buildSection3Html();
+    } else {
+      container.innerHTML = buildSection4Html();
+    }
+
+    renderSidebarAndChrome();
+  }
+
+  /* --- SECTION 1: How Payment Choices Work (Pre-Training + Multimedia + Segmenting) --- */
+  function buildSection1Html() {
+    const activeTabObj = TRADE_OFF_TABS.find((t) => t.key === state.section1.activeTab) || TRADE_OFF_TABS[0];
+
+    const goalsHtml = LESSON1_GOALS.map(
+      (goal, idx) => `
+        <li class="goals-item">
+          <span class="goal-circle" aria-hidden="true">${idx + 1}</span>
+          <span>${escapeHtml(goal)}</span>
+        </li>
+      `
+    ).join('');
+
+    const tabsBarHtml = TRADE_OFF_TABS.map((t) => {
+      const isActive = t.key === activeTabObj.key;
+      const visited = Boolean(state.section1.visitedTabs[t.key]);
+      return `
+        <button
+          type="button"
+          id="btn-tab-${t.key}"
+          class="rise-tab-btn${isActive ? ' is-active' : ''}"
+          role="tab"
+          aria-selected="${isActive ? 'true' : 'false'}"
+          aria-controls="panel-tab-${t.key}"
+          data-tab-key="${t.key}"
+        >
+          <span>${escapeHtml(t.label)}</span>
+          ${visited ? '<span class="tab-visited-dot" aria-hidden="true">✓</span>' : ''}
+        </button>
+      `;
+    }).join('');
+
+    const cardsHtml = PSYCHOLOGY_CARDS.map((card) => {
+      const flipped = Boolean(state.section1.flippedCards[card.key]);
+      return `
+        <button
+          type="button"
+          id="btn-flip-${card.key}"
+          class="flip-card-btn${flipped ? ' is-flipped' : ''}"
+          aria-pressed="${flipped ? 'true' : 'false'}"
+          data-flip-key="${card.key}"
+        >
+          <span class="flip-card-inner">
+            <span class="flip-face flip-front">
+              <span>
+                <span class="flip-icon-circle" aria-hidden="true">${card.icon}</span>
+                <span class="flip-title" style="display:block;">${escapeHtml(card.title)}</span>
+                <span class="flip-teaser" style="display:block;">${escapeHtml(card.teaser)}</span>
+              </span>
+              <span class="flip-cue">Click to flip ↻</span>
+            </span>
+            <span class="flip-face flip-back">
+              <span>
+                <span class="flip-back-title" style="display:block;">${escapeHtml(card.title)}</span>
+                <span class="flip-back-copy" style="display:block;">${escapeHtml(card.explanation)}</span>
+              </span>
+              <span class="flip-cue">Flip back ↺</span>
+            </span>
+          </span>
+        </button>
+      `;
+    }).join('');
+
+    return `
+      <header class="lesson-header">
+        <p class="lesson-step-count">Lesson 1 of 4</p>
+        <h1 id="lesson-title" class="lesson-title">Making Smart Choices: Comparing Payment Methods</h1>
+        <div class="lesson-accent-rule" aria-hidden="true"></div>
+        <div class="author-row">
+          <img src="assets/author-avatar.png" alt="MK avatar for Miina Koyama" class="author-avatar" width="34" height="34">
+          <span class="author-name">Miina Koyama</span>
+        </div>
+      </header>
+
+      <div class="hero-banner-wrap">
+        <img src="assets/hero-student-card.jpg" alt="First-year college student comparing payment options with card, phone, and laptop at a cafe table" class="hero-banner-img">
+      </div>
+
+      <p class="prose-p">
+        Starting college means juggling campus coffee runs, group rideshares, and online orders on your own for the first time. Choosing between a debit card, a credit card, and mobile apps like Venmo isn&rsquo;t just about convenience&mdash;it determines how safe your checking cash stays when surprise bills or sketchy listings pop up.
+      </p>
+
+      <div class="goals-card">
+        <h2 class="goals-heading">What You&rsquo;ll Practice in This Course</h2>
+        <ol class="goals-list">${goalsHtml}</ol>
+      </div>
+
+      <!-- Progressive Chunk 1: 4-Factor Interactive Tabs -->
+      <section class="rise-block" aria-labelledby="heading-tradeoffs">
+        <h2 id="heading-tradeoffs" class="block-heading">Four Trade-Offs Behind Every Swipe or Tap</h2>
+        <p class="block-sub">Click each tab to compare how debit cards, credit cards, and mobile payment apps handle everyday campus situations.</p>
+
+        <div class="tabs-shell">
+          <div class="tabs-bar" role="tablist" aria-label="Four payment trade-off factors">
+            ${tabsBarHtml}
+          </div>
+          <div id="panel-tab-${activeTabObj.key}" class="tab-panel" role="tabpanel" aria-labelledby="btn-tab-${activeTabObj.key}">
+            <div class="tab-visual-frame">
+              <img src="${activeTabObj.image}" alt="${escapeHtml(activeTabObj.imageAlt)}" class="tab-visual-img">
+              <span class="tab-badge-overlay">${escapeHtml(activeTabObj.badge)}</span>
+            </div>
+            <div>
+              <h3 class="tab-panel-title">${escapeHtml(activeTabObj.title)}</h3>
+              <p class="tab-panel-body">${escapeHtml(activeTabObj.body)}</p>
+              <div class="tab-example-pill">${escapeHtml(activeTabObj.example)}</div>
+            </div>
+          </div>
+        </div>
+
+        ${
+          !state.section1.chunk2Revealed
+            ? `
+              <div class="rise-continue-wrap">
+                <button type="button" id="btn-reveal-chunk2" class="rise-continue-btn">
+                  Continue &middot; Spending Psychology
+                </button>
+              </div>
+            `
+            : ''
+        }
+      </section>
+
+      ${
+        state.section1.chunk2Revealed
+          ? `
+            <!-- Progressive Chunk 2: 3 Psychology Flip Cards -->
+            <section id="section1-chunk2" class="rise-block" aria-labelledby="heading-psychology">
+              <h2 id="heading-psychology" class="block-heading">How Payment Psychology Nudges Your Wallet</h2>
+              <p class="block-sub">Flip each card to see why the exact same $65 purchase feels completely different depending on how you pay.</p>
+
+              <div class="flip-grid">
+                ${cardsHtml}
+              </div>
+
+              <div class="rise-continue-wrap">
+                <button type="button" id="btn-continue-to-s2" class="rise-continue-btn">
+                  Continue to Lesson 2: Match Payment to Scenario &rarr;
+                </button>
+              </div>
+            </section>
+          `
+          : ''
+      }
+    `;
+  }
+
+  /* --- SECTION 2: Match Payment to Scenario (1 Card at a Time + Spatial Contiguity) --- */
+  function buildSection2Html() {
+    const idx = state.section2.currentIndex;
+    const scenario = SORTING_SCENARIOS[idx];
+    const cardState = state.section2.cards[scenario.id];
+    const solvedCount = Object.values(state.section2.cards).filter((c) => c.solved).length;
+    const allSolved = solvedCount === SORTING_SCENARIOS.length;
+
+    const dotsHtml = SORTING_SCENARIOS.map((s, i) => {
+      const cState = state.section2.cards[s.id];
+      const cls = [
+        'deck-dot-btn',
+        i === idx ? 'is-current' : '',
+        cState.solved ? 'is-done' : ''
+      ]
+        .filter(Boolean)
+        .join(' ');
+      return `
+        <button
+          type="button"
+          id="btn-s2-dot-${i + 1}"
+          class="${cls}"
+          data-s2-jump="${i}"
+          aria-label="Scenario card ${i + 1} of ${SORTING_SCENARIOS.length}${cState.solved ? ' (completed)' : ''}"
+        >
+          ${cState.solved ? '✓' : i + 1}
+        </button>
+      `;
+    }).join('');
+
+    const bucketsHtml = BUCKET_OPTIONS.map((b) => {
+      const isSelected = cardState.selected === b.key;
+      const fb = isSelected ? scenario.feedback[b.key] : null;
+      const stateCls = isSelected ? (fb && fb.ok ? ' is-selected-ok' : ' is-selected-try') : '';
+      return `
+        <button
+          type="button"
+          id="btn-s2-bucket-${b.key}"
+          class="bucket-btn${stateCls}"
+          data-s2-bucket="${b.key}"
+          aria-pressed="${isSelected ? 'true' : 'false'}"
+        >
+          <span class="bucket-icon" aria-hidden="true">${b.icon}</span>
+          <span class="bucket-title">${escapeHtml(b.title)}</span>
+          <span class="bucket-sub">${escapeHtml(b.sub)}</span>
+        </button>
+      `;
+    }).join('');
+
+    let feedbackHtml = '';
+    if (cardState.selected) {
+      const fb = scenario.feedback[cardState.selected];
+      feedbackHtml = `
+        <div class="inline-feedback-box ${fb.ok ? 'is-ok' : 'is-warn'}" role="status" aria-live="polite">
+          <p class="feedback-head">${escapeHtml(fb.head)}</p>
+          <p class="feedback-body">${escapeHtml(fb.body)}</p>
+        </div>
+      `;
+    }
+
+    const hintsShown = scenario.hints.slice(0, cardState.hintLevel);
+    const hintsHtml =
+      hintsShown.length > 0
+        ? `
+          <div class="hint-stack" aria-live="polite">
+            ${hintsShown
+              .map(
+                (h, hIdx) => `
+                  <div class="hint-item">
+                    <span class="hint-level-tag">Hint ${hIdx + 1}/3:</span>
+                    <span>${escapeHtml(h)}</span>
+                  </div>
+                `
+              )
+              .join('')}
+          </div>
+        `
+        : '';
+
+    const canAdvanceCard = cardState.solved && idx < SORTING_SCENARIOS.length - 1;
+
+    return `
+      <header class="lesson-header">
+        <p class="lesson-step-count">Lesson 2 of 4</p>
+        <h1 id="lesson-title" class="lesson-title">Match Payment to Scenario</h1>
+        <div class="lesson-accent-rule" aria-hidden="true"></div>
+      </header>
+
+      <div class="compact-intro-row">
+        <img src="assets/student-options.jpg" alt="Student choosing between phone and card at checkout" class="compact-intro-thumb">
+        <p class="compact-intro-copy">
+          Sort each real college money moment into the smartest payment bucket below. You&rsquo;ll get instant feedback right inside the card&mdash;and can grab a hint anytime.
+        </p>
+      </div>
+
+      <div class="deck-progress-bar">
+        <span class="deck-counter-label">Scenario Card ${idx + 1} of ${SORTING_SCENARIOS.length} &middot; ${solvedCount}/${SORTING_SCENARIOS.length} Matched</span>
+        <div class="deck-dots">${dotsHtml}</div>
+      </div>
+
+      <section class="sorting-stage-card" aria-labelledby="s2-active-prompt">
+        <div class="scenario-signal-pill">${escapeHtml(scenario.signal)}</div>
+        <p id="s2-active-prompt" class="scenario-card-prompt">${escapeHtml(scenario.prompt)}</p>
+
+        <p class="bucket-prompt-label">Select the best payment method for this moment:</p>
+        <div class="buckets-grid">
+          ${bucketsHtml}
+        </div>
+
+        ${feedbackHtml}
+        ${hintsHtml}
+
+        <div class="card-actions-row">
+          <button
+            type="button"
+            id="btn-s2-hint"
+            class="hint-btn"
+            ${cardState.hintLevel >= 3 || cardState.solved ? 'disabled' : ''}
+          >
+            Need a Hint? (${cardState.hintLevel}/3)
+          </button>
+
+          ${
+            canAdvanceCard
+              ? `
+                <button type="button" id="btn-s2-next-card" class="next-card-btn">
+                  Next Scenario (${idx + 2} of ${SORTING_SCENARIOS.length}) &rarr;
+                </button>
+              `
+              : ''
+          }
+        </div>
+      </section>
+
+      ${
+        allSolved
+          ? `
+            <div class="rise-continue-wrap">
+              <button type="button" id="btn-continue-to-s3" class="rise-continue-btn">
+                Continue to Lesson 3: Spring Break Money Moves &rarr;
+              </button>
+            </div>
+          `
+          : ''
+      }
+    `;
+  }
+
+  /* --- SECTION 3: Spring Break Money Moves (Carlos Stage + Live Wallet + Track A Remediation) --- */
+  function buildSection3Html() {
+    const idx = state.section3.sceneIndex;
+    const scene = CARLOS_SCENES[idx];
+    const sceneState = state.section3.scenes[scene.id];
+    const rem = state.section3.activeRemediation;
+    const solvedCount = Object.values(state.section3.scenes).filter((s) => s.solved).length;
+    const allSolved = solvedCount === CARLOS_SCENES.length;
+
+    const chosenObj = sceneState.selected
+      ? scene.choices.find((c) => c.key === sceneState.selected)
+      : null;
+
+    // Determine live wallet display values
+    let checkingVal = scene.baseChecking;
+    let creditVal = scene.baseCredit;
+    let feeVal = 0;
+    let checkingAlert = false;
+    let autoPayLabel = '⚠️ Tomorrow 6 AM Auto-Pay';
+    let autoPayValue = '$120';
+
+    if (sceneState.solved && chosenObj && chosenObj.nextWallet) {
+      checkingVal = chosenObj.nextWallet.checking;
+      creditVal = chosenObj.nextWallet.credit;
+      feeVal = chosenObj.nextWallet.fee;
+      if (chosenObj.nextWallet.settled6AM) {
+        autoPayLabel = '✅ 6 AM Auto-Pay Settled';
+        autoPayValue = 'Paid (-$120)';
+      }
+    } else if (chosenObj && chosenObj.previewWallet) {
+      checkingVal = chosenObj.previewWallet.checking;
+      creditVal = chosenObj.previewWallet.credit;
+      feeVal = chosenObj.previewWallet.fee;
+      checkingAlert = Boolean(chosenObj.previewWallet.alertChecking);
+    }
+
+    // Determine background & Carlos pose
+    const bgImage = sceneState.solved ? scene.bgSolved : scene.bgUnresolved;
+    let carlosPose = sceneState.solved ? scene.poseSolved : scene.poseUnresolved;
+    if (rem) {
+      carlosPose = 'assets/carlos-thinking.png';
+    } else if (!sceneState.solved && chosenObj && chosenObj.pose) {
+      carlosPose = chosenObj.pose;
+    }
+
+    const dotsHtml = CARLOS_SCENES.map((sc, i) => {
+      const st = state.section3.scenes[sc.id];
+      const cls = [
+        'deck-dot-btn',
+        i === idx ? 'is-current' : '',
+        st.solved ? 'is-done' : ''
+      ]
+        .filter(Boolean)
+        .join(' ');
+      return `
+        <button
+          type="button"
+          id="btn-s3-scene-${i + 1}"
+          class="${cls}"
+          data-s3-jump="${i}"
+          aria-label="Carlos scene ${i + 1} of ${CARLOS_SCENES.length}${st.solved ? ' (completed)' : ''}"
+        >
+          ${st.solved ? '✓' : i + 1}
+        </button>
+      `;
+    }).join('');
+
+    // Build right-side stage dialogue or Track A Remediation Quick-Fix
+    let rightCardContent = '';
+    if (rem) {
+      const qf = REMEDIATION_QUICK_FIXES[rem.type];
+      const chosenDiagnostic = chosenObj && !sceneState.solved
+        ? `
+          <div class="inline-feedback-box is-danger" style="margin-top:0; margin-bottom:12px;" role="status" aria-live="polite">
+            <p class="feedback-head">${escapeHtml(chosenObj.head)}</p>
+            <p class="feedback-body">${escapeHtml(chosenObj.body)}</p>
+          </div>
+        `
+        : '';
+
+      const remOptsHtml = qf.options
+        .map((opt) => {
+          const isPicked = rem.selectedOpt === opt.key;
+          const cls = isPicked ? (opt.ok ? ' is-selected-ok' : ' is-selected-bad') : '';
+          return `
+            <button
+              type="button"
+              id="btn-rem-opt-${opt.key}"
+              class="stage-choice-btn${cls}"
+              data-rem-opt="${opt.key}"
+            >
+              <span class="stage-choice-main">${escapeHtml(opt.label)}</span>
+            </button>
+          `;
+        })
+        .join('');
+
+      const pickedOptObj = rem.selectedOpt ? qf.options.find((o) => o.key === rem.selectedOpt) : null;
+
+      rightCardContent = `
+        <div class="speech-card">
+          ${chosenDiagnostic}
+          <div class="remediation-card">
+            <p class="remediation-kicker">Pause &amp; Fix With Carlos</p>
+            <h2 class="remediation-title">${escapeHtml(qf.title)}</h2>
+            <div class="contrast-grid">
+              <div class="contrast-box is-naive">
+                <strong>${escapeHtml(qf.naiveLabel)}</strong><br>
+                ${escapeHtml(qf.naiveText)}
+              </div>
+              <div class="contrast-box is-smart">
+                <strong>${escapeHtml(qf.smartLabel)}</strong><br>
+                ${escapeHtml(qf.smartText)}
+              </div>
+            </div>
+            <p class="remediation-q">${escapeHtml(qf.question)}</p>
+            <div class="stage-choices-stack">
+              ${remOptsHtml}
+            </div>
+            ${
+              pickedOptObj
+                ? `
+                  <div class="inline-feedback-box ${pickedOptObj.ok ? 'is-ok' : 'is-warn'}" role="status" aria-live="polite">
+                    <p class="feedback-body">${escapeHtml(pickedOptObj.nudge)}</p>
+                  </div>
+                `
+                : ''
+            }
+            ${
+              rem.solved
+                ? `
+                  <div class="card-actions-row" style="justify-content:flex-end;">
+                    <button type="button" id="btn-rem-return" class="next-card-btn">
+                      Revise Carlos&rsquo;s Choice &rarr;
+                    </button>
+                  </div>
+                `
+                : ''
+            }
+          </div>
+        </div>
+      `;
+    } else {
+      const choicesHtml = scene.choices
+        .map((ch) => {
+          const isSelected = sceneState.selected === ch.key;
+          const isOptimal = ch.key === scene.optimal;
+          const cls = isSelected ? (isOptimal ? ' is-selected-ok' : ' is-selected-bad') : '';
+          return `
+            <button
+              type="button"
+              id="btn-s3-choice-${ch.key}"
+              class="stage-choice-btn${cls}"
+              data-s3-choice="${ch.key}"
+              aria-pressed="${isSelected ? 'true' : 'false'}"
+            >
+              <span class="stage-choice-main">${escapeHtml(ch.label)} &mdash; <span style="font-weight:400; color:#495057;">${escapeHtml(ch.sub)}</span></span>
+              <span class="stage-choice-tag">${isSelected && isOptimal ? '✓ Chosen' : 'Select'}</span>
+            </button>
+          `;
+        })
+        .join('');
+
+      const feedbackHtml = chosenObj
+        ? `
+          <div class="inline-feedback-box ${sceneState.solved ? 'is-ok' : 'is-danger'}" role="status" aria-live="polite">
+            <p class="feedback-head">${escapeHtml(chosenObj.head)}</p>
+            <p class="feedback-body">${escapeHtml(chosenObj.body)}</p>
+          </div>
+        `
+        : '';
+
+      const hintsShown = scene.hints.slice(0, sceneState.hintLevel);
+      const hintsHtml =
+        hintsShown.length > 0
+          ? `
+            <div class="hint-stack" aria-live="polite">
+              ${hintsShown
+                .map(
+                  (h, hIdx) => `
+                    <div class="hint-item">
+                      <span class="hint-level-tag">Hint ${hIdx + 1}/3:</span>
+                      <span>${escapeHtml(h)}</span>
+                    </div>
+                  `
+                )
+                .join('')}
+            </div>
+          `
+          : '';
+
+      const canNextScene = sceneState.solved && idx < CARLOS_SCENES.length - 1;
+
+      rightCardContent = `
+        <div class="speech-card">
+          <span class="scene-step-pill">${escapeHtml(scene.stepLabel)}</span>
+          <p class="carlos-quote">${escapeHtml(sceneState.solved ? scene.solvedQuote : scene.quote)}</p>
+
+          <div class="stage-choices-stack">
+            ${choicesHtml}
+          </div>
+
+          ${feedbackHtml}
+          ${hintsHtml}
+
+          <div class="card-actions-row">
+            <button
+              type="button"
+              id="btn-s3-hint"
+              class="hint-btn"
+              ${sceneState.hintLevel >= 3 || sceneState.solved ? 'disabled' : ''}
+            >
+              Need a Hint? (${sceneState.hintLevel}/3)
+            </button>
+
+            ${
+              canNextScene
+                ? `
+                  <button type="button" id="btn-s3-next-scene" class="next-card-btn">
+                    Next Scene (${idx + 2} of ${CARLOS_SCENES.length}) &rarr;
+                  </button>
+                `
+                : ''
+            }
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <header class="lesson-header">
+        <p class="lesson-step-count">Lesson 3 of 4</p>
+        <h1 id="lesson-title" class="lesson-title">Spring Break Money Moves</h1>
+        <div class="lesson-accent-rule" aria-hidden="true"></div>
+      </header>
+
+      <div class="deck-progress-bar">
+        <span class="deck-counter-label">Carlos&rsquo;s Trip &middot; ${solvedCount}/${CARLOS_SCENES.length} Scenes Solved</span>
+        <div class="deck-dots">${dotsHtml}</div>
+      </div>
+
+      <!-- Authentic Rise 360 Scenario Stage with Pinned Top Wallet Bar -->
+      <section class="scenario-stage-shell" aria-label="Carlos Spring Break interactive scenario">
+        <div class="wallet-topbar" aria-live="polite">
+          <div class="wallet-metric${checkingAlert ? ' is-alert' : ''}">
+            <span class="wallet-label">Checking Cash</span>
+            <span class="wallet-value">${formatSignedDollar(checkingVal)}</span>
+          </div>
+          <div class="wallet-metric">
+            <span class="wallet-label">Credit Card Balance</span>
+            <span class="wallet-value">$${creditVal}</span>
+          </div>
+          <div class="wallet-metric is-autopay-signal">
+            <span class="wallet-label">${escapeHtml(autoPayLabel)}</span>
+            <span class="wallet-value">${escapeHtml(autoPayValue)}</span>
+          </div>
+          <div class="wallet-metric${feeVal > 0 ? ' is-alert' : ''}">
+            <span class="wallet-label">Overdraft Fees</span>
+            <span class="wallet-value">$${feeVal}</span>
+          </div>
+        </div>
+
+        <div class="stage-visual-body" style="background-image: url('${bgImage}');">
+          <div class="stage-visual-scrim" aria-hidden="true"></div>
+          <div class="carlos-figure-wrap">
+            <img src="${carlosPose}" alt="Carlos college student character reacting to payment decision" class="carlos-img">
+          </div>
+          <div class="stage-dialogue-col">
+            ${rightCardContent}
+          </div>
+        </div>
+      </section>
+
+      ${
+        allSolved
+          ? `
+            <div class="rise-continue-wrap">
+              <button type="button" id="btn-continue-to-s4" class="rise-continue-btn">
+                Continue to Lesson 4: Solo Challenge (Move-In Week) &rarr;
+              </button>
+            </div>
+          `
+          : ''
+      }
+    `;
+  }
+
+  /* --- SECTION 4: Solo Challenge: Move-In Week (Track A Faded Transfer) --- */
+  function buildSection4Html() {
+    const idx = state.section4.moveIndex;
+    const move = MAYA_MOVES[idx];
+    const moveState = state.section4.moves[move.id];
+    const solvedCount = Object.values(state.section4.moves).filter((m) => m.solved).length;
+    const allSolved = solvedCount === MAYA_MOVES.length;
+
+    const chosenFb = moveState.selected ? move.feedback[moveState.selected] : null;
+
+    let checkingVal = move.baseChecking;
+    let creditVal = move.baseCredit;
+    let feeVal = 0;
+    let alertState = false;
+
+    if (moveState.solved && chosenFb && chosenFb.nextWallet) {
+      checkingVal = chosenFb.nextWallet.checking;
+      creditVal = chosenFb.nextWallet.credit;
+      feeVal = chosenFb.nextWallet.fee;
+    } else if (chosenFb && chosenFb.previewWallet) {
+      checkingVal = chosenFb.previewWallet.checking;
+      creditVal = chosenFb.previewWallet.credit;
+      feeVal = chosenFb.previewWallet.fee;
+      alertState = Boolean(chosenFb.previewWallet.alert);
+    }
+
+    const dotsHtml = MAYA_MOVES.map((m, i) => {
+      const mSt = state.section4.moves[m.id];
+      const cls = [
+        'deck-dot-btn',
+        i === idx ? 'is-current' : '',
+        mSt.solved ? 'is-done' : ''
+      ]
+        .filter(Boolean)
+        .join(' ');
+      return `
+        <button
+          type="button"
+          id="btn-s4-move-${i + 1}"
+          class="${cls}"
+          data-s4-jump="${i}"
+          aria-label="Move ${i + 1} of ${MAYA_MOVES.length}${mSt.solved ? ' (completed)' : ''}"
+        >
+          ${mSt.solved ? '✓' : i + 1}
+        </button>
+      `;
+    }).join('');
+
+    const bucketsHtml = BUCKET_OPTIONS.map((b) => {
+      const isSelected = moveState.selected === b.key;
+      const fb = isSelected ? move.feedback[b.key] : null;
+      const cls = isSelected ? (fb && fb.ok ? ' is-selected-ok' : ' is-selected-try') : '';
+      return `
+        <button
+          type="button"
+          id="btn-s4-bucket-${b.key}"
+          class="bucket-btn${cls}"
+          data-s4-bucket="${b.key}"
+          aria-pressed="${isSelected ? 'true' : 'false'}"
+        >
+          <span class="bucket-icon" aria-hidden="true">${b.icon}</span>
+          <span class="bucket-title">${escapeHtml(b.title)}</span>
+          <span class="bucket-sub">${escapeHtml(b.sub)}</span>
+        </button>
+      `;
+    }).join('');
+
+    const feedbackHtml = chosenFb
+      ? `
+        <div class="inline-feedback-box ${chosenFb.ok ? 'is-ok' : 'is-danger'}" role="status" aria-live="polite">
+          <p class="feedback-head">${escapeHtml(chosenFb.head)}</p>
+          <p class="feedback-body">${escapeHtml(chosenFb.body)}</p>
+        </div>
+      `
+      : '';
+
+    const hintsShown = move.hints.slice(0, moveState.hintLevel);
+    const hintsHtml =
+      hintsShown.length > 0
+        ? `
+          <div class="hint-stack" aria-live="polite">
+            ${hintsShown
+              .map(
+                (h, hIdx) => `
+                  <div class="hint-item">
+                    <span class="hint-level-tag">Hint ${hIdx + 1}/3:</span>
+                    <span>${escapeHtml(h)}</span>
+                  </div>
+                `
+              )
+              .join('')}
+          </div>
+        `
+        : '';
+
+    const canNextMove = moveState.solved && idx < MAYA_MOVES.length - 1;
+
+    return `
+      <header class="lesson-header">
+        <p class="lesson-step-count">Lesson 4 of 4</p>
+        <h1 id="lesson-title" class="lesson-title">Solo Challenge: Move-In Week</h1>
+        <div class="lesson-accent-rule" aria-hidden="true"></div>
+      </header>
+
+      <!-- Maya's Planner Note (No pre-highlighted warning pill — Faded Transfer!) -->
+      <div class="planner-note-card">
+        <strong>Maya&rsquo;s Move-In Planner Note:</strong> Maya starts move-in evening with <strong>$210</strong> in checking and <strong>$0</strong> on her credit card. Her city electric setup fee of <strong>$130</strong> drafts automatically from checking tonight at <strong>11:59 PM</strong>, right before her <strong>$400</strong> campus job direct deposit arrives tomorrow morning.
+      </div>
+
+      <!-- Raw Bank View (Auto-Pay Warning Pill Faded Out!) -->
+      <div class="wallet-topbar is-raw-bank" aria-live="polite">
+        <div class="wallet-metric${alertState ? ' is-alert' : ''}">
+          <span class="wallet-label">Checking Balance</span>
+          <span class="wallet-value">${formatSignedDollar(checkingVal)}</span>
+        </div>
+        <div class="wallet-metric">
+          <span class="wallet-label">Credit Card Balance</span>
+          <span class="wallet-value">$${creditVal}</span>
+        </div>
+        <div class="wallet-metric${feeVal > 0 ? ' is-alert' : ''}">
+          <span class="wallet-label">Overdraft Fees</span>
+          <span class="wallet-value">$${feeVal}</span>
+        </div>
+      </div>
+
+      <div class="deck-progress-bar">
+        <span class="deck-counter-label">${escapeHtml(move.stepLabel)} &middot; ${solvedCount}/${MAYA_MOVES.length} Completed</span>
+        <div class="deck-dots">${dotsHtml}</div>
+      </div>
+
+      <section class="sorting-stage-card" aria-labelledby="s4-active-prompt">
+        <p id="s4-active-prompt" class="scenario-card-prompt">${escapeHtml(move.prompt)}</p>
+
+        <p class="bucket-prompt-label">Choose Maya&rsquo;s payment method:</p>
+        <div class="buckets-grid">
+          ${bucketsHtml}
+        </div>
+
+        ${feedbackHtml}
+        ${hintsHtml}
+
+        <div class="card-actions-row">
+          <button
+            type="button"
+            id="btn-s4-hint"
+            class="hint-btn is-faded-link"
+            ${moveState.hintLevel >= 3 || moveState.solved ? 'disabled' : ''}
+          >
+            Request optional hint (${moveState.hintLevel}/3)
+          </button>
+
+          ${
+            canNextMove
+              ? `
+                <button type="button" id="btn-s4-next-move" class="next-card-btn">
+                  Next Move (${idx + 2} of ${MAYA_MOVES.length}) &rarr;
+                </button>
+              `
+              : ''
+          }
+        </div>
+      </section>
+
+      ${
+        allSolved
+          ? `
+            <section class="completion-summary-card" aria-labelledby="course-complete-heading">
+              <h2 id="course-complete-heading" class="completion-title">🎉 100% Complete &mdash; Smart Spending Mastered!</h2>
+              <p class="prose-p" style="margin-bottom:8px; font-size:15px;">
+                You guided both Carlos and Maya through tricky websites, group splits, and overnight auto-pay bills with <strong>$0 in overdraft fees</strong>${state.section4.fadedHintsUsed === 0 ? ' and zero solo hints needed' : ''}.
+              </p>
+              <ul class="completion-list">
+                <li><strong>Credit Card:</strong> Best for unfamiliar online checkouts (FCBA fraud shield) and short timing buffers before payday when paid in full.</li>
+                <li><strong>Mobile Payment (Venmo/Zelle):</strong> Best for instant exact splits with trusted friends—never for strangers in DMs.</li>
+                <li><strong>Debit Card:</strong> Great for everyday budgeted spending like groceries once upcoming auto-pay bills are safely covered.</li>
+              </ul>
+              <button type="button" id="btn-review-lesson1" class="hint-btn">
+                &larr; Back to Lesson 1 Overview
+              </button>
+            </section>
+          `
+          : ''
+      }
+    `;
+  }
+
+  /* ------------------------------------------------------------------------
+     6. Interaction Handlers & Event Delegation
+     ------------------------------------------------------------------------ */
+
+  function goToSection(sectionNum, scrollTop = true) {
+    state.activeSection = sectionNum;
+    closeMobileSidebar();
+    saveState();
+    renderActiveSection();
+    if (scrollTop) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function openMobileSidebar() {
+    mobileMenuOpen = true;
+    const sidebar = document.getElementById('course-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const btn = document.getElementById('btn-mobile-menu');
+    if (sidebar) sidebar.classList.add('is-mobile-open');
+    if (backdrop) backdrop.hidden = false;
+    if (btn) btn.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeMobileSidebar() {
+    mobileMenuOpen = false;
+    const sidebar = document.getElementById('course-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const btn = document.getElementById('btn-mobile-menu');
+    if (sidebar) sidebar.classList.remove('is-mobile-open');
+    if (backdrop) backdrop.hidden = true;
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  }
+
+  function openLxdDrawer() {
+    lxdDrawerOpen = true;
+    const drawer = document.getElementById('lxd-drawer');
+    const backdrop = document.getElementById('lxd-backdrop');
+    const btn = document.getElementById('btn-open-lxd');
+    if (drawer) {
+      drawer.classList.add('is-open');
+      drawer.setAttribute('aria-hidden', 'false');
+    }
+    if (backdrop) backdrop.hidden = false;
+    if (btn) btn.setAttribute('aria-expanded', 'true');
+    renderLxdTelemetry(getOverallPercent());
+  }
+
+  function closeLxdDrawer() {
+    lxdDrawerOpen = false;
+    const drawer = document.getElementById('lxd-drawer');
+    const backdrop = document.getElementById('lxd-backdrop');
+    const btn = document.getElementById('btn-open-lxd');
+    if (drawer) {
+      drawer.classList.remove('is-open');
+      drawer.setAttribute('aria-hidden', 'true');
+    }
+    if (backdrop) backdrop.hidden = true;
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  }
+
+  function handleSection2Bucket(bucketKey) {
+    const scenario = SORTING_SCENARIOS[state.section2.currentIndex];
+    const cardState = state.section2.cards[scenario.id];
+    const fb = scenario.feedback[bucketKey];
+    if (!fb) return;
+
+    state.attempts += 1;
+    cardState.selected = bucketKey;
+
+    if (fb.ok) {
+      cardState.solved = true;
+      const allDone = Object.values(state.section2.cards).every((c) => c.solved);
+      if (allDone) state.section2.completed = true;
+    } else if (fb.misconception) {
+      state.misconceptions[fb.misconception] += 1;
+    }
+
+    saveState();
+    renderActiveSection();
+  }
+
+  function handleSection3Choice(choiceKey) {
+    const scene = CARLOS_SCENES[state.section3.sceneIndex];
+    const sceneState = state.section3.scenes[scene.id];
+    const choiceObj = scene.choices.find((c) => c.key === choiceKey);
+    if (!choiceObj) return;
+
+    state.attempts += 1;
+    sceneState.selected = choiceKey;
+
+    if (choiceKey === scene.optimal) {
+      sceneState.solved = true;
+      state.section3.activeRemediation = null;
+      const allDone = Object.values(state.section3.scenes).every((s) => s.solved);
+      if (allDone) state.section3.completed = true;
+    } else {
+      const mType = choiceObj.misconception;
+      if (mType) {
+        state.misconceptions[mType] += 1;
+      }
+      const remType = choiceObj.remediationType || mType;
+      const hitCumulativeThreshold = remType && state.misconceptions[remType] >= 2;
+      const shouldRemediate =
+        remType &&
+        (choiceObj.triggersRemediation || hitCumulativeThreshold) &&
+        !state.remediationsCompleted[remType];
+
+      if (shouldRemediate) {
+        state.section3.activeRemediation = {
+          type: remType,
+          selectedOpt: null,
+          solved: false
+        };
+      }
+    }
+
+    saveState();
+    renderActiveSection();
+  }
+
+  function handleRemediationOption(optKey) {
+    const rem = state.section3.activeRemediation;
+    if (!rem) return;
+    const qf = REMEDIATION_QUICK_FIXES[rem.type];
+    const optObj = qf.options.find((o) => o.key === optKey);
+    if (!optObj) return;
+
+    state.attempts += 1;
+    rem.selectedOpt = optKey;
+    if (optObj.ok) {
+      rem.solved = true;
+      state.remediationsCompleted[rem.type] = true;
+    }
+    saveState();
+    renderActiveSection();
+  }
+
+  function handleSection4Bucket(bucketKey) {
+    const move = MAYA_MOVES[state.section4.moveIndex];
+    const moveState = state.section4.moves[move.id];
+    const fb = move.feedback[bucketKey];
+    if (!fb) return;
+
+    state.attempts += 1;
+    moveState.selected = bucketKey;
+
+    if (fb.ok) {
+      moveState.solved = true;
+      const allDone = Object.values(state.section4.moves).every((m) => m.solved);
+      if (allDone) state.section4.completed = true;
+    } else if (fb.misconception) {
+      state.misconceptions[fb.misconception] += 1;
+    }
+
+    saveState();
+    renderActiveSection();
+  }
+
+  function previewRemediationFromDrawer(remType) {
+    closeLxdDrawer();
+    state.activeSection = 3;
+    if (remType === 'fraud_exposure') {
+      state.section3.sceneIndex = 0;
+      state.section3.scenes.c1.selected = 'mobile';
+      state.section3.scenes.c1.solved = false;
+    } else if (remType === 'reward_chasing') {
+      state.section3.sceneIndex = 1;
+      state.section3.scenes.c2.selected = 'credit';
+      state.section3.scenes.c2.solved = false;
+    } else {
+      state.section3.sceneIndex = 2;
+      state.section3.scenes.c3.selected = 'debit';
+      state.section3.scenes.c3.solved = false;
+    }
+    state.section3.activeRemediation = {
+      type: remType,
+      selectedOpt: null,
+      solved: false
+    };
+    saveState();
+    renderActiveSection();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function bindEvents() {
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+
+      // Mobile menu controls
+      if (target.closest('#btn-mobile-menu')) {
+        if (mobileMenuOpen) closeMobileSidebar();
+        else openMobileSidebar();
+        return;
+      }
+      if (target.closest('#btn-close-sidebar') || target.closest('#sidebar-backdrop')) {
+        closeMobileSidebar();
+        return;
+      }
+
+      // LXD Drawer controls
+      if (target.closest('#btn-open-lxd')) {
+        if (lxdDrawerOpen) closeLxdDrawer();
+        else openLxdDrawer();
+        return;
+      }
+      if (target.closest('#btn-close-lxd') || target.closest('#lxd-backdrop')) {
+        closeLxdDrawer();
+        return;
+      }
+
+      // Sidebar lesson navigation
+      const navBtn = target.closest('[data-nav-lesson]');
+      if (navBtn) {
+        const lessonNum = Number(navBtn.getAttribute('data-nav-lesson'));
+        if (lessonNum >= 1 && lessonNum <= 4) {
+          goToSection(lessonNum, true);
+        }
+        return;
+      }
+
+      // LXD Quick Jump & Preview buttons
+      if (target.closest('#btn-jump-1')) { closeLxdDrawer(); goToSection(1); return; }
+      if (target.closest('#btn-jump-2')) { closeLxdDrawer(); goToSection(2); return; }
+      if (target.closest('#btn-jump-3')) { closeLxdDrawer(); goToSection(3); return; }
+      if (target.closest('#btn-jump-4')) { closeLxdDrawer(); goToSection(4); return; }
+
+      if (target.closest('#btn-preview-rem-liquidity')) {
+        previewRemediationFromDrawer('liquidity_blindness');
+        return;
+      }
+      if (target.closest('#btn-preview-rem-fraud')) {
+        previewRemediationFromDrawer('fraud_exposure');
+        return;
+      }
+      if (target.closest('#btn-preview-rem-reward')) {
+        previewRemediationFromDrawer('reward_chasing');
+        return;
+      }
+      if (target.closest('#btn-reset-course')) {
+        state = createFreshState();
+        saveState();
+        closeLxdDrawer();
+        renderActiveSection();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // Section 1 interactions
+      const tabBtn = target.closest('[data-tab-key]');
+      if (tabBtn) {
+        const key = tabBtn.getAttribute('data-tab-key');
+        state.section1.activeTab = key;
+        state.section1.visitedTabs[key] = true;
+        saveState();
+        renderActiveSection();
+        return;
+      }
+
+      if (target.closest('#btn-reveal-chunk2')) {
+        state.section1.visitedTabs[state.section1.activeTab] = true;
+        state.section1.chunk2Revealed = true;
+        saveState();
+        renderActiveSection();
+        const chunk2 = document.getElementById('section1-chunk2');
+        if (chunk2) chunk2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+
+      const flipBtn = target.closest('[data-flip-key]');
+      if (flipBtn) {
+        const key = flipBtn.getAttribute('data-flip-key');
+        state.section1.flippedCards[key] = !state.section1.flippedCards[key];
+        state.section1.visitedCards[key] = true;
+        saveState();
+        renderActiveSection();
+        return;
+      }
+
+      if (target.closest('#btn-continue-to-s2')) {
+        state.section1.completed = true;
+        goToSection(2, true);
+        return;
+      }
+
+      // Section 2 interactions
+      const s2Dot = target.closest('[data-s2-jump]');
+      if (s2Dot) {
+        state.section2.currentIndex = Number(s2Dot.getAttribute('data-s2-jump'));
+        saveState();
+        renderActiveSection();
+        return;
+      }
+
+      const s2Bucket = target.closest('[data-s2-bucket]');
+      if (s2Bucket) {
+        handleSection2Bucket(s2Bucket.getAttribute('data-s2-bucket'));
+        return;
+      }
+
+      if (target.closest('#btn-s2-hint')) {
+        const sc = SORTING_SCENARIOS[state.section2.currentIndex];
+        const cState = state.section2.cards[sc.id];
+        if (cState.hintLevel < 3) {
+          cState.hintLevel += 1;
+          state.hintsUsed += 1;
+          saveState();
+          renderActiveSection();
+        }
+        return;
+      }
+
+      if (target.closest('#btn-s2-next-card')) {
+        if (state.section2.currentIndex < SORTING_SCENARIOS.length - 1) {
+          state.section2.currentIndex += 1;
+          saveState();
+          renderActiveSection();
+        }
+        return;
+      }
+
+      if (target.closest('#btn-continue-to-s3')) {
+        state.section2.completed = true;
+        goToSection(3, true);
+        return;
+      }
+
+      // Section 3 interactions
+      const s3Dot = target.closest('[data-s3-jump]');
+      if (s3Dot) {
+        state.section3.sceneIndex = Number(s3Dot.getAttribute('data-s3-jump'));
+        state.section3.activeRemediation = null;
+        saveState();
+        renderActiveSection();
+        return;
+      }
+
+      const s3Choice = target.closest('[data-s3-choice]');
+      if (s3Choice) {
+        handleSection3Choice(s3Choice.getAttribute('data-s3-choice'));
+        return;
+      }
+
+      const remOpt = target.closest('[data-rem-opt]');
+      if (remOpt) {
+        handleRemediationOption(remOpt.getAttribute('data-rem-opt'));
+        return;
+      }
+
+      if (target.closest('#btn-rem-return')) {
+        const sc = CARLOS_SCENES[state.section3.sceneIndex];
+        state.section3.scenes[sc.id].selected = null;
+        state.section3.activeRemediation = null;
+        saveState();
+        renderActiveSection();
+        return;
+      }
+
+      if (target.closest('#btn-s3-hint')) {
+        const sc = CARLOS_SCENES[state.section3.sceneIndex];
+        const sState = state.section3.scenes[sc.id];
+        if (sState.hintLevel < 3) {
+          sState.hintLevel += 1;
+          state.hintsUsed += 1;
+          saveState();
+          renderActiveSection();
+        }
+        return;
+      }
+
+      if (target.closest('#btn-s3-next-scene')) {
+        if (state.section3.sceneIndex < CARLOS_SCENES.length - 1) {
+          state.section3.sceneIndex += 1;
+          state.section3.activeRemediation = null;
+          saveState();
+          renderActiveSection();
+        }
+        return;
+      }
+
+      if (target.closest('#btn-continue-to-s4')) {
+        state.section3.completed = true;
+        goToSection(4, true);
+        return;
+      }
+
+      // Section 4 interactions
+      const s4Dot = target.closest('[data-s4-jump]');
+      if (s4Dot) {
+        state.section4.moveIndex = Number(s4Dot.getAttribute('data-s4-jump'));
+        saveState();
+        renderActiveSection();
+        return;
+      }
+
+      const s4Bucket = target.closest('[data-s4-bucket]');
+      if (s4Bucket) {
+        handleSection4Bucket(s4Bucket.getAttribute('data-s4-bucket'));
+        return;
+      }
+
+      if (target.closest('#btn-s4-hint')) {
+        const mv = MAYA_MOVES[state.section4.moveIndex];
+        const mState = state.section4.moves[mv.id];
+        if (mState.hintLevel < 3) {
+          mState.hintLevel += 1;
+          state.hintsUsed += 1;
+          state.section4.fadedHintsUsed += 1;
+          saveState();
+          renderActiveSection();
+        }
+        return;
+      }
+
+      if (target.closest('#btn-s4-next-move')) {
+        if (state.section4.moveIndex < MAYA_MOVES.length - 1) {
+          state.section4.moveIndex += 1;
+          saveState();
+          renderActiveSection();
+        }
+        return;
+      }
+
+      if (target.closest('#btn-review-lesson1')) {
+        goToSection(1, true);
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (lxdDrawerOpen) closeLxdDrawer();
+        if (mobileMenuOpen) closeMobileSidebar();
+      }
+    });
+  }
+
+  /* ------------------------------------------------------------------------
+     7. Bootstrap
+     ------------------------------------------------------------------------ */
+
+  document.addEventListener('DOMContentLoaded', () => {
+    bindEvents();
+    renderActiveSection();
   });
 })();

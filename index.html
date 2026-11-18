@@ -3,371 +3,145 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Spending: Payment Trade-Offs &amp; Cash Liquidity | CMU 05-840 Track A</title>
-  <meta name="description" content="Adaptive interactive learning module comparing debit cards, credit cards, and mobile P2P apps across fraud liability, spending psychology, and multi-step checking liquidity for first-year college students.">
+  <title>Smart Spending: Comparing Payment Methods for First-Year College Students</title>
+  <meta name="description" content="Interactive college personal finance course comparing debit cards, credit cards, and mobile payment apps through real-world scenarios, live cash-flow wallets, and adaptive feedback.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23FF631E'/%3E%3Ctext x='16' y='22' text-anchor='middle' fill='white' font-family='Arial,sans-serif' font-weight='bold' font-size='18'%3E%24%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div class="topbar-brand">
-        <span class="course-eyebrow">CMU 05-840 · Track A Adaptive Lab</span>
-        <span class="topbar-divider" aria-hidden="true">|</span>
-        <a
-          id="link-baseline-header"
-          class="baseline-link"
-          href="https://miinakoyama.github.io/articulate/#/lessons/cml18wm70002i3b7heipi6l99"
-          target="_blank"
-          rel="noopener noreferrer"
-        >Baseline S26 Rise 360 Course (Koyama) ↗</a>
-      </div>
-      <div class="topbar-controls">
-        <div id="mastery-readout" class="mastery-readout" aria-live="polite">Mastery: 0 / 3 Stages</div>
-        <button
-          id="btn-toggle-lxd"
-          type="button"
-          class="lxd-toggle-btn"
-          aria-pressed="false"
-        >
-          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
-          <span>Learning Engineer View</span>
-        </button>
-      </div>
-    </div>
+  <a href="#main-content" id="skip-to-content" class="skip-link">Skip to lesson content</a>
+
+  <!-- Mobile Rise Header Bar (visible < 960px) -->
+  <header class="mobile-topbar">
+    <button type="button" id="btn-mobile-menu" class="mobile-menu-btn" aria-label="Open course menu" aria-expanded="false" aria-controls="course-sidebar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+    <span class="mobile-course-title">Smart Spending</span>
+    <span id="mobile-progress-badge" class="mobile-progress-badge">0%</span>
   </header>
 
-  <main class="page-shell">
-    <section class="masthead" aria-labelledby="page-main-heading">
-      <div class="masthead-meta">Spring 2027 · First-Year Personal Finance Decision Practice</div>
-      <h1 id="page-main-heading">Smart Spending: Payment Trade-Offs &amp; Cash Liquidity</h1>
-      <p class="masthead-lead">
-        Most college money mistakes do not happen from reckless splurges—they happen when an everyday payment tool collides with an unverified seller, a group bill split, a pre-authorization hold, or an overnight auto-debit. Practice pairing the right payment method with its underlying trade-off, protect checking liquidity across multi-step scenarios, and verify independent transfer when structural scaffolds fade.
-      </p>
+  <div id="sidebar-backdrop" class="sidebar-backdrop" hidden></div>
 
-      <div class="lo-panel">
-        <div class="lo-panel-header">
-          <span class="section-label">Carried-Over Learning Objectives (Replicated &amp; Extended from S26 Baseline)</span>
+  <div class="rise-shell">
+    <!-- Authentic Rise 360 Left Sidebar (272px fixed on desktop) -->
+    <aside id="course-sidebar" class="rise-sidebar" aria-label="Course outline">
+      <div class="sidebar-hero">
+        <div class="sidebar-hero-top">
+          <p class="sidebar-course-title">Smart Spending: Comparing Payment Methods for First-Year College Students</p>
+          <button type="button" id="btn-close-sidebar" class="sidebar-close-btn" aria-label="Close course menu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
-        <ul class="lo-grid">
-          <li class="lo-item">
-            <span class="lo-code">LO1</span>
-            <span>Compare debit cards, credit cards, and mobile payment apps in real-life college scenarios.</span>
-          </li>
-          <li class="lo-item">
-            <span class="lo-code">LO2</span>
-            <span>Evaluate payment methods across four trade-off dimensions: cost/fees, convenience, security/fraud protection, and budgeting/liquidity control.</span>
-          </li>
-          <li class="lo-item">
-            <span class="lo-code">LO3</span>
-            <span>Recognize how psychological factors (pain of paying, deferred payment illusion, reward-point chasing) influence spending choices.</span>
-          </li>
-          <li class="lo-item">
-            <span class="lo-code">LO4</span>
-            <span>Apply multi-step payment decision strategies to protect cash liquidity and avoid overdraft fees.</span>
-          </li>
-        </ul>
-      </div>
-
-      <div class="primer-wrap">
-        <button
-          id="btn-toggle-primer"
-          type="button"
-          class="primer-toggle-btn"
-          aria-expanded="false"
-          aria-controls="primer-drawer"
-        >
-          <span id="primer-btn-label">Show 4-Dimension Payment Reference Matrix</span>
-        </button>
-        <span id="primer-faded-note" class="primer-faded-note" hidden>Auto-collapsed during Stage 3 Faded Transfer</span>
-
-        <div id="primer-drawer" class="primer-drawer" hidden>
-          <table class="matrix-table">
-            <thead>
-              <tr>
-                <th scope="col">Payment Method</th>
-                <th scope="col">Cost &amp; Fees</th>
-                <th scope="col">Convenience</th>
-                <th scope="col">Security &amp; Fraud Protection</th>
-                <th scope="col">Budgeting, Liquidity &amp; Psychology</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Debit Card</strong><br><span class="mono-num">Checking-Linked</span></td>
-                <td><span class="mono-num">$0</span> transaction fee, but <span class="mono-num">$35</span> overdraft risk if balance drops below <span class="mono-num">$0</span>.</td>
-                <td>Universal POS &amp; ATM access; poor for multi-person bill splits.</td>
-                <td>Reg E limits liability if reported quickly, <em>but</em> disputed bank cash stays frozen up to 10 business days.</td>
-                <td>High <em>pain of paying</em> curbs impulse drift, yet consumes liquid checking cash needed for upcoming auto-debits.</td>
-              </tr>
-              <tr>
-                <td><strong>Credit Card</strong><br><span class="mono-num">Paid in Full</span></td>
-                <td><span class="mono-num">$0</span> interest when statement is paid in full; <span class="mono-num">22%–29%</span> APR if carried; cash advances incur upfront fees.</td>
-                <td>Accepted online &amp; in-store; absorbs hotel/fuel pre-auth holds on credit line.</td>
-                <td>Strongest shield (FCBA): issuer's funds—not your checking cash—are held during merchant disputes.</td>
-                <td>Short-term grace-period float buffers checking liquidity, <em>but</em> deferred payment illusion &amp; point-chasing inflate spending.</td>
-              </tr>
-              <tr>
-                <td><strong>Mobile P2P App</strong><br><span class="mono-num">Venmo / Cash App / Zelle</span></td>
-                <td><span class="mono-num">$0</span> bank/balance transfers; <span class="mono-num">~3%</span> fee if funded by credit card; <span class="mono-num">~1.75%</span> instant cash-out fee.</td>
-                <td>Fastest exact peer-to-peer bill splitting among classmates you know and trust.</td>
-                <td>Authorized push transfers act like handing over cash—virtually zero chargeback recourse with strangers.</td>
-                <td>Bank-linked sends still drain checking cash immediately; money left sitting in app balances does not cover bank auto-pays.</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="sidebar-progress-wrap">
+          <div id="sidebar-progress-bar" class="sidebar-progress-track" role="progressbar" aria-label="Course completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="sidebar-progress-fill" class="sidebar-progress-fill" style="width: 0%;"></div>
+          </div>
+          <div id="sidebar-progress-text" class="sidebar-progress-label">0% COMPLETE</div>
         </div>
       </div>
 
-      <aside id="lxd-overview-panel" class="lxd-callout" aria-label="Learning Engineer Architecture Overview">
-        <div class="lxd-callout-header">
-          <span class="lxd-eyebrow">Learning Engineer View · Architecture &amp; Live State Telemetry</span>
-          <span class="mono-num">AGENTS.md Track A Contract</span>
-        </div>
-        <div class="lxd-columns">
-          <div class="lxd-col">
-            <strong>(a) LO1–LO4 Pedagogical Alignment</strong>
-            Carries over all four objectives from Miina Koyama's S26 Articulate Rise 360 course while shifting time-on-task from passive accordion reading to active decision practice (Koedinger's <em>Doer Effect</em>).
-          </div>
-          <div class="lxd-col">
-            <strong>(b) What Rise 360 Could Not Do</strong>
-            Rise 360 isolates stateless sorting blocks from static scenario branches—it cannot track cross-problem misconception counters, maintain a live numerical account ledger, or strip scaffolds dynamically in Stage 3.
-          </div>
-          <div class="lxd-col">
-            <strong>(c) AGENTS.md State-Driven Adaptation</strong>
-            <code>state.misconceptions</code> accumulates causal errors across Stages 1–2; hitting <code>&gt;= 2</code> errors or a Stage 2 overdraft/fraud event triggers a dominant-misconception Remediation Micro-Task before revision.
-          </div>
-        </div>
-        <div class="telemetry-strip">
-          <div id="lxd-telemetry-chips" class="telemetry-metrics" aria-live="polite"></div>
-          <div class="lxd-inspector-actions">
-            <button id="btn-preview-rem-liquidity" type="button" class="btn-lxd-mini">Preview Remediation: Liquidity</button>
-            <button id="btn-preview-rem-fraud" type="button" class="btn-lxd-mini">Preview Remediation: Fraud</button>
-            <button id="btn-preview-rem-rewards" type="button" class="btn-lxd-mini">Preview Remediation: Rewards</button>
-            <button id="btn-lxd-unlock-stages" type="button" class="btn-lxd-mini">Unlock All Stages (Inspect)</button>
-            <button id="btn-reset-all" type="button" class="btn-lxd-mini">Reset Learner State</button>
-          </div>
-        </div>
-      </aside>
-    </section>
+      <nav id="sidebar-nav" class="sidebar-nav" aria-label="Course lessons">
+        <!-- Populated dynamically by app.js -->
+      </nav>
+    </aside>
 
-    <nav class="stage-nav" aria-label="Learning Progression Stages">
-      <button id="tab-stage-1" type="button" class="stage-tab is-active" aria-current="step">
-        <span class="stage-tab-top">
-          <span class="stage-num">Stage 01</span>
-          <span id="badge-stage-1" class="stage-badge">0 / 4 Mastered</span>
-        </span>
-        <span class="stage-tab-title">Scenario Trade-Off Classifier</span>
-        <span class="stage-tab-sub">Full Channeling Cues · Method + Rationale</span>
-      </button>
-
-      <button id="tab-stage-2" type="button" class="stage-tab is-locked">
-        <span class="stage-tab-top">
-          <span class="stage-num">Stage 02</span>
-          <span id="badge-stage-2" class="stage-badge">Locked</span>
-        </span>
-        <span class="stage-tab-title">Spring Break Liquidity Simulation</span>
-        <span class="stage-tab-sub">Guided Ledger · 3 Sequential Steps</span>
-      </button>
-
-      <button id="tab-stage-3" type="button" class="stage-tab is-locked">
-        <span class="stage-tab-top">
-          <span class="stage-num">Stage 03</span>
-          <span id="badge-stage-3" class="stage-badge">Locked</span>
-        </span>
-        <span class="stage-tab-title">Faded Transfer: Move-In Week</span>
-        <span class="stage-tab-sub">Scaffolds Removed · Independent Transfer</span>
-      </button>
-    </nav>
-
-    <div id="stage-lock-notice" class="stage-lock-notice" role="status" aria-live="polite" hidden></div>
-
-    <section id="remediation-shell" class="remediation-shell" aria-label="Targeted Remediation Micro-Task" aria-live="polite" hidden></section>
-
-    <!-- ====================================================================
-         STAGE 1: SCENARIO TRADE-OFF CLASSIFIER
-         ==================================================================== -->
-    <section id="stage-1-panel" class="stage-panel" aria-labelledby="stage-1-heading">
-      <div class="stage-header">
-        <span class="section-label">Stage 1 of 3 · Guided Relational Classification</span>
-        <h2 id="stage-1-heading">Scenario Trade-Off Classifier</h2>
-        <p>
-          For each real-life college situation below, select <strong>both</strong> the strongest payment method and the <strong>primary trade-off mechanism</strong> that makes it fit. Every check diagnoses your exact pairing without giving away the answer on Attempt 1.
-        </p>
+    <!-- Rise 360 Main Lesson Canvas -->
+    <main id="main-content" class="rise-main" tabindex="-1">
+      <div id="lesson-container" class="lesson-column">
+        <header class="lesson-header">
+          <p class="lesson-step-count">Lesson 1 of 4</p>
+          <h1 id="lesson-title" class="lesson-title">Making Smart Choices: Comparing Payment Methods</h1>
+          <div class="lesson-accent-rule" aria-hidden="true"></div>
+        </header>
       </div>
+    </main>
+  </div>
 
-      <aside class="lxd-callout" aria-label="Stage 1 Learning Engineering Notes">
-        <div class="lxd-callout-header">
-          <span class="lxd-eyebrow">LXD Callout · Stage 1 Classifier Mechanics</span>
-          <span class="mono-num">Targets: LO1 · LO2 · LO3</span>
-        </div>
-        <div class="lxd-columns">
-          <div class="lxd-col">
-            <strong>(a) LO Alignment</strong>
-            Evaluates whether learners can match payment tools to situations (<code>LO1</code>) by explicit trade-off dimension (<code>LO2</code>) while spotting pain-of-paying and reward-chasing traps (<code>LO3</code>).
-          </div>
-          <div class="lxd-col">
-            <strong>(b) Rise 360 Sorting Limitation Overcome</strong>
-            Rise 360 Sorting Blocks snap cards into single categories with binary right/wrong bounce-back. Here, learners must coordinate <em>Method × Trade-Off Rationale</em> (3×3 matrix), catching right-method/wrong-reason guesses.
-          </div>
-          <div class="lxd-col">
-            <strong>(c) Scaffolding &amp; AGENTS.md Logic</strong>
-            Includes explicit <em>Channeling</em> context-signal tags and 3-level graduated hints (Metacognitive → Conceptual → Concrete Check) while logging misconception counters for Stage 2 adaptation.
-          </div>
-        </div>
-      </aside>
+  <!-- Discreet Floating Toggle for Instructor / LXD & Mayer Audit (Zero Learner Clutter) -->
+  <button type="button" id="btn-open-lxd" class="lxd-fab" aria-expanded="false" aria-controls="lxd-drawer">
+    <span aria-hidden="true">⚙️</span>
+    <span>LXD &amp; Mayer Notes</span>
+  </button>
 
-      <div id="stage-1-cards" class="scenario-stack"></div>
+  <div id="lxd-backdrop" class="lxd-backdrop" hidden></div>
 
-      <div id="stage-1-complete" class="stage-complete-card" hidden>
-        <div>
-          <span class="section-label">Stage 1 Mastery Verified (4 / 4 Scenarios)</span>
-          <h3>Ready for Multi-Step Cash Liquidity Management</h3>
-          <p>You accurately paired each college payment scenario with its underlying protection, split, psychology, or liquidity mechanism. Next, apply these rules across connected accounts where earlier choices affect tomorrow morning's balance.</p>
-        </div>
-        <button id="btn-goto-stage-2" type="button" class="btn-primary">Proceed to Stage 2: Spring Break Simulation →</button>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         STAGE 2: SPRING BREAK LIQUIDITY SIMULATION
-         ==================================================================== -->
-    <section id="stage-2-panel" class="stage-panel" aria-labelledby="stage-2-heading" hidden>
-      <div class="stage-header">
-        <span class="section-label">Stage 2 of 3 · Stateful Multi-Step Decision Engine</span>
-        <h2 id="stage-2-heading">Spring Break Liquidity Simulation</h2>
-        <p>
-          Guide first-year student <strong>Carlos</strong> through three connected afternoon and evening expenses. Watch the <strong>Account &amp; Risk Ledger</strong> closely: an earlier swipe directly alters whether tomorrow morning's scheduled auto-debit triggers a <span class="mono-num">$35</span> overdraft fee.
-        </p>
-      </div>
-
-      <aside class="lxd-callout" aria-label="Stage 2 Learning Engineering Notes">
-        <div class="lxd-callout-header">
-          <span class="lxd-eyebrow">LXD Callout · Stateful Ledger &amp; Adaptive Remediation</span>
-          <span class="mono-num">Targets: LO2 · LO3 · LO4</span>
-        </div>
-        <div class="lxd-columns">
-          <div class="lxd-col">
-            <strong>(a) LO Alignment</strong>
-            Operationalizes <code>LO4</code> (multi-step liquidity protection &amp; overdraft prevention) alongside fraud-liability shielding (<code>LO2</code>) and group dining reward-point traps (<code>LO3</code>).
-          </div>
-          <div class="lxd-col">
-            <strong>(b) Rise 360 Scenario Block Limitation</strong>
-            Rise 360 Scenario Blocks only route across static text screens without numeric memory. Here, <code>Checking Cash</code>, <code>Credit Balance</code>, a <span class="mono-num">$125</span> fuel-pump debit hold, and <span class="mono-num">$35</span> overdraft rules compute dynamically.
-          </div>
-          <div class="lxd-col">
-            <strong>(c) Focused Scaffolds &amp; Remediation Gate</strong>
-            Ledger displays a highlighted <em>Focusing Scaffold</em> (<code>Net Safe Checking Buffer: $120</code>). Accumulating <code>&gt;= 2</code> errors or triggering an overdraft/fraud risk launches a Targeted Remediation Micro-Task.
-          </div>
-        </div>
-      </aside>
-
-      <div class="sim-layout">
-        <div>
-          <div class="scenario-brief-box">
-            <strong>Carlos's Starting Position (Thursday, 2:00 PM):</strong> Carlos begins his Spring Break road trip with <strong class="mono-num">$240</strong> in Checking Cash and <strong class="mono-num">$0</strong> on his student Credit Card (his campus IT paycheck arrives Monday to pay off planned trip charges in full). An annual <strong class="mono-num">$120</strong> student streaming &amp; cloud storage renewal is scheduled to auto-debit from <strong>Checking tomorrow at 6:00 AM</strong>.
-          </div>
-
-          <div id="stage-2-steps" class="scenario-stack"></div>
-
-          <div id="stage-2-complete" class="stage-complete-card" hidden>
-            <div>
-              <span class="section-label">Stage 2 Mastery Verified · 6:00 AM Auto-Debit Cleared Safely</span>
-              <h3>Zero Overdraft Fees &amp; Protected Dispute Rights</h3>
-              <p>Carlos finished Spring Break Day 1 with <span class="mono-num">$95</span> in Checking after the 6:00 AM <span class="mono-num">$120</span> auto-debit cleared, <span class="mono-num">$0</span> in overdraft fees, and full FCBA chargeback protection. Stage 3 now removes structural scaffolds to verify independent transfer.</p>
-            </div>
-            <button id="btn-goto-stage-3" type="button" class="btn-primary">Proceed to Stage 3: Faded Transfer Challenge →</button>
-          </div>
-        </div>
-
-        <aside id="stage-2-ledger" class="ledger-card" aria-label="Carlos Live Account and Risk Ledger" aria-live="polite"></aside>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         STAGE 3: FADED TRANSFER CHALLENGE ("CAMPUS MOVE-IN WEEK")
-         ==================================================================== -->
-    <section id="stage-3-panel" class="stage-panel" aria-labelledby="stage-3-heading" hidden>
-      <div class="stage-header">
-        <span class="section-label">Stage 3 of 3 · Unassisted Structural Transfer</span>
-        <h2 id="stage-3-heading">Faded Transfer Challenge: Campus Move-In Week</h2>
-        <p>
-          Verify that your strategy transfers to a realistic setting where banking apps do not pre-label merchant risks or subtract tonight's scheduled utility draft for you.
-        </p>
-      </div>
-
-      <div class="fading-status-banner">
-        <div>
-          <strong>Structural Scaffolds Faded:</strong> Context-signal badges (<em>channeling</em>), pre-computed safe-checking buffer math (<em>focusing</em>), and pre-highlighted auto-pay alert banners have been removed. Read Maya's Move-In brief carefully and track her raw bank balance yourself.
-        </div>
-        <span class="scaffold-tag">Scaffold Mode: Faded</span>
-      </div>
-
-      <aside class="lxd-callout" aria-label="Stage 3 Fading Mechanics Notes">
-        <div class="lxd-callout-header">
-          <span class="lxd-eyebrow">LXD Callout · Explicit Fading for Self-Regulated Transfer</span>
-          <span class="mono-num">Targets: LO1 · LO2 · LO3 · LO4</span>
-        </div>
-        <div class="lxd-columns">
-          <div class="lxd-col">
-            <strong>(a) LO Alignment</strong>
-            Tests integrated mastery of <code>LO1–LO4</code> when learners must self-initiate merchant risk checks, peer split discipline, and overnight ACH liquidity protection.
-          </div>
-          <div class="lxd-col">
-            <strong>(b) Rise 360 Fading Limitation</strong>
-            Static authoring blocks present identical visual prompts throughout a course, risking prompt dependency (<em>the assistance dilemma</em>, Koedinger &amp; Aleven, 2007).
-          </div>
-          <div class="lxd-col">
-            <strong>(c) Ecological Validity &amp; Fading Rule</strong>
-            Real mobile bank apps omit scheduled overnight ACH bills from "Available Checking." Fading <code>Net Safe Checking</code> and warning banners (Pea, 2004; Puntambekar &amp; Hübscher, 2005) tests authentic transfer.
-          </div>
-        </div>
-      </aside>
-
-      <div class="sim-layout">
-        <div>
-          <div class="scenario-brief-box">
-            <strong>Maya's Move-In Day Brief (Monday, 11:15 AM):</strong> Maya arrives at her residence hall with <strong class="mono-num">$210</strong> in Checking and <strong class="mono-num">$0</strong> on her student Credit Card, with a confirmed <strong class="mono-num">$400</strong> financial-aid refund depositing Friday morning. Earlier this morning, she completed her apartment setup form authorizing a <strong class="mono-num">$130</strong> city electric utility deposit to draft automatically from Checking tonight at 11:59 PM.
-          </div>
-
-          <div id="stage-3-steps" class="scenario-stack"></div>
-        </div>
-
-        <aside id="stage-3-ledger" class="ledger-card" aria-label="Maya Raw Bank Account View" aria-live="polite"></aside>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         FINAL MASTERY SYNTHESIS REPORT
-         ==================================================================== -->
-    <section id="synthesis-panel" class="synthesis-section" aria-labelledby="synthesis-heading" hidden>
-      <span class="section-label">Adaptive Mastery Complete · All 3 Stages Verified</span>
-      <h2 id="synthesis-heading">Personal Payment Strategy &amp; Transfer Summary</h2>
-      <p id="synthesis-lead" class="card-narrative"></p>
-      <div id="synthesis-grid" class="synthesis-grid"></div>
-      <div class="card-actions">
-        <span class="mono-num">CMU 05-840 Track A · LO1–LO4 Verified</span>
-        <button id="btn-reset-synthesis" type="button" class="btn-secondary">Restart Full Module Practice</button>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="footer-inner">
+  <!-- Discreet Slide-Over LXD & Mayer Audit Drawer -->
+  <aside id="lxd-drawer" class="lxd-drawer" aria-hidden="true" aria-labelledby="lxd-drawer-title">
+    <div class="lxd-drawer-header">
       <div>
-        Built for <strong>CMU 05-840: Tools for Online Learning</strong> (Spring 2027, Tool Task 3 Demo #1 — Track A). Replicates &amp; extends
-        <a
-          id="link-baseline-footer"
-          href="https://miinakoyama.github.io/articulate/#/lessons/cml18wm70002i3b7heipi6l99"
-          target="_blank"
-          rel="noopener noreferrer"
-        >Miina Koyama's S26 Articulate Rise 360 Exemplar</a>.
+        <p class="lxd-drawer-kicker">Instructor &amp; Design Audit</p>
+        <h2 id="lxd-drawer-title" class="lxd-drawer-title">LXD &amp; Mayer Multimedia Notes</h2>
       </div>
-      <div class="mono-num">Vanilla HTML/CSS/JS · Zero External Dependencies · Local Session State</div>
+      <button type="button" id="btn-close-lxd" class="lxd-close-btn" aria-label="Close LXD and Mayer notes">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
     </div>
-  </footer>
+
+    <div class="lxd-drawer-body">
+      <section class="lxd-section" aria-labelledby="lxd-baseline-heading">
+        <h3 id="lxd-baseline-heading" class="lxd-section-heading">S26 Articulate Rise 360 Baseline</h3>
+        <p class="lxd-copy">
+          Replicates and extends Miina Koyama&rsquo;s Spring 2026 showcase course while preserving her authentic Rise 360 (`#FF631E`) layout, peer voice, photography, and Carlos scenario cast:
+        </p>
+        <a id="link-miina-baseline" class="lxd-baseline-link" href="https://miinakoyama.github.io/articulate/#/lessons/cml18wm70002i3b7heipi6l99" target="_blank" rel="noopener noreferrer">
+          Open Miina Koyama&rsquo;s Original Rise 360 Course ↗
+        </a>
+      </section>
+
+      <section class="lxd-section" aria-labelledby="lxd-controls-heading">
+        <h3 id="lxd-controls-heading" class="lxd-section-heading">Quick Demo &amp; Grading Controls</h3>
+        <div class="lxd-btn-label">Jump to Any Lesson</div>
+        <div class="lxd-btn-grid">
+          <button type="button" id="btn-jump-1" class="lxd-action-btn">1. Pre-Training</button>
+          <button type="button" id="btn-jump-2" class="lxd-action-btn">2. Sorting Deck</button>
+          <button type="button" id="btn-jump-3" class="lxd-action-btn">3. Carlos Stage</button>
+          <button type="button" id="btn-jump-4" class="lxd-action-btn">4. Faded Solo</button>
+        </div>
+
+        <div class="lxd-btn-label">Preview Track A Remediation (Inside Carlos Stage)</div>
+        <div class="lxd-btn-stack">
+          <button type="button" id="btn-preview-rem-liquidity" class="lxd-action-btn">Preview Overdraft / Liquidity Quick-Fix</button>
+          <button type="button" id="btn-preview-rem-fraud" class="lxd-action-btn">Preview Unverified Seller Fraud Quick-Fix</button>
+          <button type="button" id="btn-preview-rem-reward" class="lxd-action-btn">Preview 2% Points Trap Quick-Fix</button>
+        </div>
+
+        <button type="button" id="btn-reset-course" class="lxd-reset-btn">Reset Course Progress &amp; Telemetry</button>
+      </section>
+
+      <section class="lxd-section" aria-labelledby="lxd-telemetry-heading">
+        <h3 id="lxd-telemetry-heading" class="lxd-section-heading">Live Track A State Telemetry</h3>
+        <div id="lxd-telemetry-panel" class="lxd-telemetry" aria-live="polite">
+          <!-- Updated dynamically by app.js -->
+        </div>
+      </section>
+
+      <section class="lxd-section" aria-labelledby="lxd-mayer-heading">
+        <h3 id="lxd-mayer-heading" class="lxd-section-heading">Mayer&rsquo;s Multimedia Principles Applied</h3>
+        <ul class="lxd-principle-list">
+          <li><strong>Coherence:</strong> 0% CMU/LXD meta-text on the learner canvas; every word and visual directly serves payment decision-making.</li>
+          <li><strong>Pre-Training:</strong> Lesson 1 builds mental models of the 4 trade-offs and 3 spending psychology habits before complex scenarios.</li>
+          <li><strong>Segmenting:</strong> Progressive <code>CONTINUE</code> blocks in Lesson 1 and strictly 1-card-at-a-time sorting/scenario views replace stacked forms.</li>
+          <li><strong>Multimedia &amp; Embodiment:</strong> Campus photography paired with Carlos&rsquo;s 8 expressive character poses across 5 Spring Break scenes.</li>
+          <li><strong>Spatial Contiguity &amp; Signaling:</strong> Live wallet bar (with <code>⚠️ 6 AM Auto-Pay: $120</code> cue) sits directly inside Carlos&rsquo;s scenario stage; feedback renders right inside the active card.</li>
+          <li><strong>Personalization:</strong> Warm, conversational first-year peer tone replaces abstract academic jargon.</li>
+          <li><strong>Track A Scaffolding &amp; Fading:</strong> 3-level hints + Worked Contrast Quick-Fixes in Lesson 3 fade out to a realistic raw bank view in Lesson 4.</li>
+        </ul>
+      </section>
+    </div>
+  </aside>
 
   <script src="app.js"></script>
 </body>
