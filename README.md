@@ -46,17 +46,54 @@ This static web application faithfully recreates the **Articulate Rise 360 Class
 
 ---
 
+## Data Instrumentation & Supabase Telemetry Spec (Tool Task 6 Exemplar)
+
+To support empirical learning-curve analysis and misconception diagnosis without adding learner-facing clutter, this app integrates CMU 05-840's canonical **PSLC DataShop-aligned telemetry engine** (`tol-telemetry.js` + `tol-telemetry.css` + `setup_telemetry.sql`). A discreet, closed-by-default **`Telemetry`** pill sits beside **`⚙️ LXD & Mayer Notes`** in the bottom-right dock (`toolName: 'tol-vibe-payment-methods'`).
+
+### KC–Step–SAI & Misconception Tag Mapping
+
+| Section / Stage | `problem_id` | `step_id` | `selection` | `action` | `input` (SAI) | `kc_id` | `feedback_or_bug_tag` (`CORRECT` / `INCORRECT` / `HINT`) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Lesson 2: Card 1** *(Unfamiliar Hotel Site)* | `s2_match_s1` | `s1_payment_bucket` | `s1_payment_bucket` | `select_payment_method` | `Credit` / `Debit` / `Mobile_P2P` | `KC_classify_payment_mechanics` | `affirm_fcba_credit_shield` · `bug_debit_checking_cash_freeze_on_dispute` · `bug_p2p_unverified_seller_no_chargeback` |
+| **Lesson 2: Card 2** *($48 Rideshare Split)* | `s2_match_s2` | `s2_payment_bucket` | `s2_payment_bucket` | `select_payment_method` | `Mobile_P2P` / `Credit` / `Debit` | `KC_compare_interest_and_fees` | `affirm_zero_fee_p2p_peer_split` · `bug_reward_points_group_iou_trap` · `bug_debit_full_group_tab_cash_drain` |
+| **Lesson 2: Card 3** *($65 Grocery Budget)* | `s2_match_s3` | `s3_payment_bucket` | `s3_payment_bucket` | `select_payment_method` | `Debit` / `Credit` / `Mobile_P2P` | `KC_classify_payment_mechanics` | `affirm_debit_pain_of_paying_budget` · `bug_deferred_billing_impulse_creep` · `bug_p2p_retail_lane_mismatch` |
+| **Lesson 2: Card 4** *($180 Charger vs. Thu Auto-Pay)* | `s2_match_s4` | `s4_payment_bucket` | `s4_payment_bucket` | `select_payment_method` | `Credit` / `Debit` / `Mobile_P2P` | `KC_compare_interest_and_fees` | `affirm_credit_grace_period_avoids_overdraft` · `bug_debit_overdraft_before_autopay` · `bug_bank_linked_p2p_overdraft_before_autopay` |
+| **Lesson 2: Card 5** *(Stranger DM Concert Tickets)* | `s2_match_s5` | `s5_payment_bucket` | `s5_payment_bucket` | `select_payment_method` | `Credit` / `Mobile_P2P` / `Debit` | `KC_classify_payment_mechanics` | `affirm_verified_checkout_fcba_shield` · `bug_p2p_stranger_dm_scam_irreversible` · `bug_debit_checking_cash_freeze_on_dispute` |
+| **Lesson 3: Carlos Scene 1** *($200 Hotel Deposit · $240 Checking)* | `s3_carlos_c1` | `c1_wallet_decision` | `c1_wallet_decision` | `select_payment_method` | `Credit` / `Debit` / `Mobile_P2P` | `KC_evaluate_situational_payment_risk` | `affirm_fcba_shield_and_autopay_buffer` · `bug_debit_overdraft_and_unverified_seller_exposure` · `bug_p2p_unverified_host_and_overdraft` |
+| **Lesson 3: Carlos Scene 2** *($100 Group Dinner · 2% Points)* | `s3_carlos_c2` | `c2_wallet_decision` | `c2_wallet_decision` | `select_payment_method` | `Mobile_P2P` / `Debit` / `Credit` | `KC_evaluate_situational_payment_risk` | `affirm_instant_p2p_table_split` · `bug_debit_full_group_tab_liquidity_squeeze` · `bug_reward_chasing_2pct_group_iou_trap` |
+| **Lesson 3: Carlos Scene 3** *(6 AM Auto-Pay & $125 Pump Hold)* | `s3_carlos_c3` | `c3_wallet_decision` | `c3_wallet_decision` | `select_payment_method` | `Credit` / `Debit` / `Mobile_P2P` | `KC_evaluate_situational_payment_risk` | `affirm_credit_avoids_pump_hold_overdraft` · `bug_debit_overdraft_or_deposit_hold` · `bug_bank_linked_p2p_overdraft_before_6am_autopay` |
+| **Lesson 3: Worked-Contrast Quick-Fix** *(Liquidity / Fraud / Rewards)* | `s3_carlos_<c1\|c2\|c3>` | `<c1\|c2\|c3>_quickfix_remediation` | `<c1\|c2\|c3>_quickfix_remediation` | `select_quickfix_option` | `A_*` / `B_*` / `C_*` | `KC_remediate_payment_contrast` | `affirm_quickfix_*_mastered` · `bug_quickfix_*` |
+| **Lesson 4: Maya Move 1** *(Faded · Classifieds Mini-Fridge)* | `s4_maya_m1` | `m1_faded_transfer` | `m1_faded_transfer` | `select_payment_method` | `Credit` / `Debit` / `Mobile_P2P` | `KC_transfer_autonomous_payment_choice` | `affirm_transfer_fcba_and_draft_buffer` · `bug_debit_overdraft_or_deposit_hold` · `bug_p2p_unverified_classifieds_and_overdraft` |
+| **Lesson 4: Maya Move 2** *(Faded · Suitemate Supplies Split)* | `s4_maya_m2` | `m2_faded_transfer` | `m2_faded_transfer` | `select_payment_method` | `Mobile_P2P` / `Credit` / `Debit` | `KC_transfer_autonomous_payment_choice` | `affirm_transfer_instant_p2p_suitemate_split` · `bug_reward_chasing_suitemate_iou_trap` · `bug_debit_full_group_tab_liquidity_squeeze` |
+| **Lesson 4: Maya Move 3** *(Faded · 8 PM Lab Kit vs. 11:59 PM Draft)* | `s4_maya_m3` | `m3_faded_transfer` | `m3_faded_transfer` | `select_payment_method` | `Credit` / `Debit` / `Mobile_P2P` | `KC_transfer_autonomous_payment_choice` | `affirm_transfer_grace_period_bridges_payday` · `bug_debit_overdraft_before_1159pm_draft` · `bug_bank_linked_p2p_overdraft_before_1159pm_draft` |
+| **Contingent & Faded Hints** *(Lessons 2, 3, & 4)* | Active `problem_id` | Active `step_id` | `<id>_hint_button` / `<id>_faded_hint_button` | `request_hint` | `hint_level_1..3` | Step's active `kc_id` | `scaffold_graduated_hint_L1..L3` · `scaffold_faded_optional_hint_L1..L3` (`outcome: 'HINT'`) |
+
+### Commit Boundary Rules
+- **`context_message` on Stage Load & Quick-Fix Open:** Logged strictly once when an assessment scenario loads (`s2_match_*`, `s3_carlos_*` with Carlos's starting checking/credit/auto-pay wallet state, `s4_maya_*` with `scaffolds_faded: true`) or when an inline Worked-Contrast Quick-Fix remediation card opens.
+- **Paired `tool_message` (SAI) + `tutor_message` Only on Graded Commits & Hints:** Emitted with shared `transaction_id`, `attempt_num`, `hint_level`, `kc_id`, `feedback_or_bug_tag`, and `step_duration_ms` exclusively on payment-method submissions, Quick-Fix answers, and hint requests.
+- **Zero Passive UI Noise:** Lesson 1 Pre-Training tab switches, flashcard flips, `CONTINUE` clicks, scrolling, lesson navigation, and `⚙️ LXD & Mayer Notes` drawer toggles never emit `tool_message` or `tutor_message` transactions.
+
+### 3-Step Supabase Free Tier + GitHub Pages Setup
+1. **Run [`setup_telemetry.sql`](./setup_telemetry.sql) in Supabase:** Open your Supabase project's **SQL Editor**, paste `setup_telemetry.sql`, and click **Run** to create `public.interaction_logs` with anonymous `INSERT`-only Row-Level Security (`anon` can insert telemetry rows from GitHub Pages, while `SELECT`/`UPDATE`/`DELETE` remain restricted to the project owner).
+2. **Connect Cloud Sink or Run Local-First:** Open the GitHub Pages URL (use `?peer=peer_01` to assign clean anonymous peer IDs), click **`Telemetry`** in the bottom-right dock, expand **Supabase Cloud Sink**, and enter your Supabase Project URL + Publishable `anon` Key to click **Connect & Sync**.
+3. **Download CSV / JSON Anytime:** Click **Export CSV** or **Export JSON** in the Live Interaction Telemetry drawer—or export `public.interaction_logs` from Supabase **Table Editor**—for immediate PSLC DataShop / Python / R learning-curve analysis.
+
+---
+
 ## Repository Structure & Local Usage
 
 ```text
 tol-vibe-payment-methods/
-├── .nojekyll      # Bypasses Jekyll processing on GitHub Pages
-├── AGENTS.md      # Pedagogical, Mayer multimedia, & technical specification
-├── README.md      # Course overview, Rise 360 comparison, & Mayer iteration log
-├── assets/        # Authentic campus photos, 5 scene backdrops, & 8 Carlos poses
-├── index.html     # Rise 360 two-column HTML5 shell + discreet LXD drawer
-├── styles.css     # Authentic Rise 360 (#FF631E, Lato + Merriweather) stylesheet
-└── app.js         # Vanilla ES6+ stateful course engine, wallets, hints, & Quick-Fixes
+├── .nojekyll           # Bypasses Jekyll processing on GitHub Pages
+├── AGENTS.md           # Pedagogical, Mayer multimedia, & telemetry specification
+├── README.md           # Course overview, Rise 360 comparison, & telemetry guide
+├── setup_telemetry.sql # Supabase Postgres + INSERT-only RLS telemetry schema
+├── assets/             # Authentic campus photos, 5 scene backdrops, & 8 Carlos poses
+├── index.html          # Rise 360 two-column HTML5 shell + discreet LXD & Telemetry dock
+├── styles.css          # Authentic Rise 360 (#FF631E, Lato + Merriweather) stylesheet
+├── tol-telemetry.css   # Closed-by-default Live Interaction Telemetry Inspector styles
+├── tol-telemetry.js    # Canonical PSLC DataShop telemetry engine + CSV/Supabase sync
+└── app.js              # Vanilla ES6+ stateful course engine, wallets, hints, & Quick-Fixes
 ```
 
 ### Running Locally

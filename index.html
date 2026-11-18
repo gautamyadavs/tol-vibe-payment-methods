@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="tol-telemetry.css">
 </head>
 <body>
   <a href="#main-content" id="skip-to-content" class="skip-link">Skip to lesson content</a>
@@ -67,11 +68,13 @@
     </main>
   </div>
 
-  <!-- Discreet Floating Toggle for Instructor / LXD & Mayer Audit (Zero Learner Clutter) -->
-  <button type="button" id="btn-open-lxd" class="lxd-fab" aria-expanded="false" aria-controls="lxd-drawer">
-    <span aria-hidden="true">⚙️</span>
-    <span>LXD &amp; Mayer Notes</span>
-  </button>
+  <!-- Discreet Floating Controls for Telemetry Inspector & LXD / Mayer Audit (Zero Learner Clutter) -->
+  <div id="instructor-controls-dock" class="instructor-controls-dock" role="region" aria-label="Telemetry and LXD audit controls">
+    <button type="button" id="btn-open-lxd" class="lxd-fab" aria-expanded="false" aria-controls="lxd-drawer">
+      <span aria-hidden="true">⚙️</span>
+      <span>LXD &amp; Mayer Notes</span>
+    </button>
+  </div>
 
   <div id="lxd-backdrop" class="lxd-backdrop" hidden></div>
 
@@ -143,6 +146,7 @@
     </div>
   </aside>
 
+  <script src="tol-telemetry.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

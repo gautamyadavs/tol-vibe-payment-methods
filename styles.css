@@ -1312,14 +1312,21 @@ a:focus-visible,
 }
 
 /* ==========================================================================
-   Discreet Floating LXD & Mayer Audit Drawer (Zero Learner Clutter)
+   Discreet Floating Telemetry + LXD & Mayer Audit Controls (Zero Clutter)
    ========================================================================== */
 
-.lxd-fab {
+.instructor-controls-dock {
   position: fixed;
   right: 16px;
   bottom: 16px;
   z-index: 450;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.lxd-fab {
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--border-mid);
   color: #495057;
@@ -1328,6 +1335,8 @@ a:focus-visible,
   font-family: var(--font-sans);
   font-size: 12.5px;
   font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1337,6 +1346,26 @@ a:focus-visible,
 }
 
 .lxd-fab:hover {
+  border-color: var(--rise-orange);
+  color: var(--ink-heading);
+}
+
+.instructor-controls-dock .tol-tel-trigger {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border-mid);
+  color: #495057;
+  border-radius: 999px;
+  padding: 8px 13px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+.instructor-controls-dock .tol-tel-trigger:hover {
+  background: #FFFFFF;
   border-color: var(--rise-orange);
   color: var(--ink-heading);
 }
@@ -1682,5 +1711,17 @@ a:focus-visible,
 
   .compact-intro-thumb {
     display: none;
+  }
+
+  .instructor-controls-dock {
+    right: 12px;
+    bottom: 12px;
+    gap: 6px;
+  }
+
+  .instructor-controls-dock .lxd-fab,
+  .instructor-controls-dock .tol-tel-trigger {
+    padding: 7px 11px;
+    font-size: 12px;
   }
 }

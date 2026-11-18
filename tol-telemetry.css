@@ -1,0 +1,343 @@
+/* CMU 05-840 Live Interaction Telemetry Inspector — Non-intrusive, Closed by Default */
+.tol-tel-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  background: #ffffff;
+  color: #1e293b;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.tol-tel-trigger:hover {
+  background: #f8fafc;
+  border-color: #0284c7;
+}
+.tol-tel-trigger-dark {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.24);
+  color: #f8fafc;
+}
+.tol-tel-trigger-dark:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: #38bdf8;
+}
+.tol-tel-trigger-floating {
+  position: fixed;
+  bottom: 14px;
+  right: 14px;
+  z-index: 9990;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.16);
+}
+.tol-tel-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.22);
+}
+.tol-tel-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+}
+.tol-tel-trigger-dark .tol-tel-count {
+  background: #38bdf8;
+  color: #0f172a;
+}
+
+.tol-tel-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.36);
+  z-index: 9998;
+}
+.tol-tel-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(520px, 94vw);
+  background: #ffffff;
+  color: #0f172a;
+  z-index: 9999;
+  box-shadow: -8px 0 30px rgba(15, 23, 42, 0.22);
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.tol-tel-backdrop[hidden],
+.tol-tel-drawer[hidden] {
+  display: none !important;
+}
+.tol-tel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 18px 12px;
+  background: #0f172a;
+  color: #f8fafc;
+}
+.tol-tel-eyebrow {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  margin-bottom: 2px;
+}
+.tol-tel-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+.tol-tel-close {
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.tol-tel-close:hover {
+  color: #ffffff;
+}
+.tol-tel-meta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 9px 16px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 11.5px;
+}
+.tol-tel-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #334155;
+}
+.tol-tel-chip code {
+  background: #e2e8f0;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #0f172a;
+}
+.tol-tel-status {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.tol-tel-status-local {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+.tol-tel-status-sync {
+  background: #fef3c7;
+  color: #b45309;
+}
+.tol-tel-status-ok {
+  background: #dcfce7;
+  color: #15803d;
+}
+.tol-tel-status-err {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.tol-tel-cloud-box {
+  padding: 8px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fcfcfd;
+  font-size: 12px;
+}
+.tol-tel-cloud-box summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #334155;
+}
+.tol-tel-cloud-help {
+  margin: 6px 0 8px;
+  color: #475569;
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+.tol-tel-cloud-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tol-tel-cloud-inputs input {
+  padding: 6px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.tol-tel-actions {
+  display: flex;
+  gap: 8px;
+  padding: 9px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.tol-tel-btn {
+  padding: 6px 11px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tol-tel-btn:hover {
+  background: #f1f5f9;
+}
+.tol-tel-btn-primary {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+}
+.tol-tel-btn-primary:hover {
+  background: #0369a1;
+}
+
+.tol-tel-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 7px 16px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 11px;
+  color: #475569;
+}
+.tol-tel-pill {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.tol-tel-pill-context {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+.tol-tel-pill-tool {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.tol-tel-pill-tutor {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.tol-tel-stream {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f8fafc;
+}
+.tol-tel-empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: #64748b;
+  font-size: 12.5px;
+  line-height: 1.5;
+  background: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+}
+.tol-tel-row {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left-width: 4px;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 11.5px;
+}
+.tol-tel-row-context {
+  border-left-color: #7c3aed;
+}
+.tol-tel-row-tool {
+  border-left-color: #2563eb;
+}
+.tol-tel-row-tutor {
+  border-left-color: #16a34a;
+}
+.tol-tel-row-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.tol-tel-step {
+  color: #475569;
+  font-weight: 600;
+}
+.tol-tel-time {
+  margin-left: auto;
+  color: #64748b;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10.5px;
+}
+.tol-tel-row-body {
+  color: #1e293b;
+  line-height: 1.45;
+  word-break: break-word;
+}
+.tol-tel-row-body code {
+  background: #f1f5f9;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+}
+.tol-tel-outcome {
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.tol-tel-out-correct {
+  background: #dcfce7;
+  color: #15803d;
+}
+.tol-tel-out-incorrect {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.tol-tel-out-hint {
+  background: #fef3c7;
+  color: #b45309;
+}
+.tol-tel-meta {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #475569;
+}

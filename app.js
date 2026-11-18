@@ -1675,9 +1675,13 @@
 
   function goToSection(sectionNum, scrollTop = true) {
     state.activeSection = sectionNum;
+    if (sectionNum === 1) {
+      lastLoggedContextKey = '';
+    }
     closeMobileSidebar();
     saveState();
     renderActiveSection();
+    syncActiveAssessmentContext('section_enter');
     if (scrollTop) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1730,11 +1734,224 @@
     if (btn) btn.setAttribute('aria-expanded', 'false');
   }
 
+  /* ------------------------------------------------------------------------
+     6b. PSLC DataShop Interaction Telemetry Mapping (05-840 Canonical Schema)
+     ------------------------------------------------------------------------ */
+
+  const PAYMENT_METHOD_INPUT = {
+    debit: 'Debit',
+    credit: 'Credit',
+    mobile: 'Mobile_P2P'
+  };
+
+  const SECTION2_TELEMETRY = {
+    s1: {
+      kcId: 'KC_classify_payment_mechanics',
+      tags: {
+        credit: 'affirm_fcba_credit_shield',
+        debit: 'bug_debit_checking_cash_freeze_on_dispute',
+        mobile: 'bug_p2p_unverified_seller_no_chargeback'
+      }
+    },
+    s2: {
+      kcId: 'KC_compare_interest_and_fees',
+      tags: {
+        mobile: 'affirm_zero_fee_p2p_peer_split',
+        credit: 'bug_reward_points_group_iou_trap',
+        debit: 'bug_debit_full_group_tab_cash_drain'
+      }
+    },
+    s3: {
+      kcId: 'KC_classify_payment_mechanics',
+      tags: {
+        debit: 'affirm_debit_pain_of_paying_budget',
+        credit: 'bug_deferred_billing_impulse_creep',
+        mobile: 'bug_p2p_retail_lane_mismatch'
+      }
+    },
+    s4: {
+      kcId: 'KC_compare_interest_and_fees',
+      tags: {
+        credit: 'affirm_credit_grace_period_avoids_overdraft',
+        debit: 'bug_debit_overdraft_before_autopay',
+        mobile: 'bug_bank_linked_p2p_overdraft_before_autopay'
+      }
+    },
+    s5: {
+      kcId: 'KC_classify_payment_mechanics',
+      tags: {
+        credit: 'affirm_verified_checkout_fcba_shield',
+        mobile: 'bug_p2p_stranger_dm_scam_irreversible',
+        debit: 'bug_debit_checking_cash_freeze_on_dispute'
+      }
+    }
+  };
+
+  const SECTION3_TELEMETRY = {
+    c1: {
+      credit: 'affirm_fcba_shield_and_autopay_buffer',
+      debit: 'bug_debit_overdraft_and_unverified_seller_exposure',
+      mobile: 'bug_p2p_unverified_host_and_overdraft'
+    },
+    c2: {
+      mobile: 'affirm_instant_p2p_table_split',
+      debit: 'bug_debit_full_group_tab_liquidity_squeeze',
+      credit: 'bug_reward_chasing_2pct_group_iou_trap'
+    },
+    c3: {
+      credit: 'affirm_credit_avoids_pump_hold_overdraft',
+      debit: 'bug_debit_overdraft_or_deposit_hold',
+      mobile: 'bug_bank_linked_p2p_overdraft_before_6am_autopay'
+    }
+  };
+
+  const QUICKFIX_TELEMETRY = {
+    liquidity_blindness: {
+      a: { input: 'A_debit_tonight_overdrafts', tag: 'bug_quickfix_debit_overdraft_math_missed' },
+      b: { input: 'B_credit_buffer_until_payday', tag: 'affirm_quickfix_liquidity_buffer_mastered' },
+      c: { input: 'C_bank_linked_venmo_drains_checking', tag: 'bug_quickfix_p2p_still_pulls_checking' }
+    },
+    fraud_exposure: {
+      a: { input: 'A_zelle_to_stranger', tag: 'bug_quickfix_zelle_stranger_irreversible' },
+      b: { input: 'B_credit_checkout_fcba_shield', tag: 'affirm_quickfix_fcba_shield_mastered' },
+      c: { input: 'C_debit_freezes_checking_cash', tag: 'bug_quickfix_debit_dispute_cash_freeze' }
+    },
+    reward_chasing: {
+      a: { input: 'A_false_35_swipe_fee', tag: 'bug_quickfix_confused_overdraft_with_swipe_fee' },
+      b: { input: 'B_unpaid_split_wipes_out_points', tag: 'affirm_quickfix_iou_vs_points_mastered' },
+      c: { input: 'C_false_midnight_expiration', tag: 'bug_quickfix_missed_friend_iou_risk' }
+    }
+  };
+
+  const SECTION4_TELEMETRY = {
+    m1: {
+      credit: 'affirm_transfer_fcba_and_draft_buffer',
+      debit: 'bug_debit_overdraft_or_deposit_hold',
+      mobile: 'bug_p2p_unverified_classifieds_and_overdraft'
+    },
+    m2: {
+      mobile: 'affirm_transfer_instant_p2p_suitemate_split',
+      credit: 'bug_reward_chasing_suitemate_iou_trap',
+      debit: 'bug_debit_full_group_tab_liquidity_squeeze'
+    },
+    m3: {
+      credit: 'affirm_transfer_grace_period_bridges_payday',
+      debit: 'bug_debit_overdraft_before_1159pm_draft',
+      mobile: 'bug_bank_linked_p2p_overdraft_before_1159pm_draft'
+    }
+  };
+
+  let lastLoggedContextKey = '';
+
+  function emitTelemetryTransaction(payload) {
+    if (!window.TOLTelemetry || typeof window.TOLTelemetry.logTransaction !== 'function') return;
+    window.TOLTelemetry.logTransaction(payload);
+  }
+
+  function syncActiveAssessmentContext(triggerReason) {
+    if (!window.TOLTelemetry || typeof window.TOLTelemetry.logContext !== 'function') return;
+
+    // Enforce strict Commit Boundary: passive Pre-Training (Lesson 1) emits zero assessment rows
+    if (state.activeSection === 1) return;
+
+    let contextKey = '';
+    let problemId = '';
+    let stepId = null;
+    let contextPayload = null;
+
+    if (state.activeSection === 2) {
+      const scenario = SORTING_SCENARIOS[state.section2.currentIndex];
+      const spec = SECTION2_TELEMETRY[scenario.id];
+      contextKey = `s2::${scenario.id}`;
+      problemId = `s2_match_${scenario.id}`;
+      stepId = `${scenario.id}_payment_bucket`;
+      contextPayload = {
+        section: 2,
+        lesson: 'Match Payment to Scenario',
+        scenario_id: scenario.id,
+        card_index: state.section2.currentIndex + 1,
+        total_cards: SORTING_SCENARIOS.length,
+        signal: scenario.signal,
+        kc_id: spec ? spec.kcId : 'KC_classify_payment_mechanics',
+        scaffolds_faded: false,
+        trigger: triggerReason || 'card_load'
+      };
+    } else if (state.activeSection === 3) {
+      const scene = CARLOS_SCENES[state.section3.sceneIndex];
+      const rem = state.section3.activeRemediation;
+      if (rem) {
+        contextKey = `s3::${scene.id}::quickfix::${rem.type}`;
+        problemId = `s3_carlos_${scene.id}`;
+        stepId = `${scene.id}_quickfix_remediation`;
+        contextPayload = {
+          section: 3,
+          lesson: 'Spring Break Money Moves',
+          event: 'quickfix_remediation_opened',
+          persona: 'Carlos',
+          scene_id: scene.id,
+          remediation_type: rem.type,
+          kc_id: 'KC_remediate_payment_contrast',
+          starting_checking_usd: scene.baseChecking,
+          starting_credit_usd: scene.baseCredit,
+          autopay_6am_due_usd: 120,
+          cumulative_misconceptions: Object.assign({}, state.misconceptions),
+          trigger: triggerReason || 'quickfix_open'
+        };
+      } else {
+        contextKey = `s3::${scene.id}::scene`;
+        problemId = `s3_carlos_${scene.id}`;
+        stepId = `${scene.id}_wallet_decision`;
+        contextPayload = {
+          section: 3,
+          lesson: 'Spring Break Money Moves',
+          persona: 'Carlos',
+          scene_id: scene.id,
+          scene_label: scene.stepLabel,
+          starting_checking_usd: scene.baseChecking,
+          starting_credit_usd: scene.baseCredit,
+          autopay_6am_due_usd: 120,
+          overdraft_fee_risk_usd: 35,
+          remediations_completed: Object.assign({}, state.remediationsCompleted),
+          scaffolds_faded: false,
+          trigger: triggerReason || 'scene_load'
+        };
+      }
+    } else if (state.activeSection === 4) {
+      const move = MAYA_MOVES[state.section4.moveIndex];
+      contextKey = `s4::${move.id}`;
+      problemId = `s4_maya_${move.id}`;
+      stepId = `${move.id}_faded_transfer`;
+      contextPayload = {
+        section: 4,
+        lesson: 'Solo Challenge: Move-In Week',
+        persona: 'Maya',
+        move_id: move.id,
+        move_label: move.stepLabel,
+        starting_checking_usd: move.baseChecking,
+        starting_credit_usd: move.baseCredit,
+        autopay_1159pm_due_usd: 130,
+        scaffolds_faded: true,
+        trigger: triggerReason || 'move_load'
+      };
+    }
+
+    if (!contextKey || contextKey === lastLoggedContextKey) return;
+    lastLoggedContextKey = contextKey;
+    window.TOLTelemetry.logContext({
+      problemId,
+      stepId,
+      context: contextPayload
+    });
+  }
+
   function handleSection2Bucket(bucketKey) {
     const scenario = SORTING_SCENARIOS[state.section2.currentIndex];
     const cardState = state.section2.cards[scenario.id];
     const fb = scenario.feedback[bucketKey];
     if (!fb) return;
+    if (cardState.solved && cardState.selected === bucketKey) return;
+
+    syncActiveAssessmentContext('card_load');
 
     state.attempts += 1;
     cardState.selected = bucketKey;
@@ -1747,6 +1964,20 @@
       state.misconceptions[fb.misconception] += 1;
     }
 
+    const spec = SECTION2_TELEMETRY[scenario.id];
+    emitTelemetryTransaction({
+      problemId: `s2_match_${scenario.id}`,
+      stepId: `${scenario.id}_payment_bucket`,
+      selection: `${scenario.id}_payment_bucket`,
+      action: 'select_payment_method',
+      input: PAYMENT_METHOD_INPUT[bucketKey] || bucketKey,
+      outcome: fb.ok ? 'CORRECT' : 'INCORRECT',
+      isHint: false,
+      hintLevel: cardState.hintLevel,
+      kcId: spec ? spec.kcId : 'KC_classify_payment_mechanics',
+      feedbackOrBugTag: (spec && spec.tags[bucketKey]) || (fb.ok ? 'affirm_optimal_choice' : `bug_${fb.misconception || 'suboptimal_method'}`)
+    });
+
     saveState();
     renderActiveSection();
   }
@@ -1756,11 +1987,16 @@
     const sceneState = state.section3.scenes[scene.id];
     const choiceObj = scene.choices.find((c) => c.key === choiceKey);
     if (!choiceObj) return;
+    if (sceneState.solved && sceneState.selected === choiceKey) return;
+
+    syncActiveAssessmentContext('scene_load');
 
     state.attempts += 1;
     sceneState.selected = choiceKey;
+    const isOptimal = choiceKey === scene.optimal;
+    let openedRemediation = false;
 
-    if (choiceKey === scene.optimal) {
+    if (isOptimal) {
       sceneState.solved = true;
       state.section3.activeRemediation = null;
       const allDone = Object.values(state.section3.scenes).every((s) => s.solved);
@@ -1783,7 +2019,26 @@
           selectedOpt: null,
           solved: false
         };
+        openedRemediation = true;
       }
+    }
+
+    const s3Tags = SECTION3_TELEMETRY[scene.id] || {};
+    emitTelemetryTransaction({
+      problemId: `s3_carlos_${scene.id}`,
+      stepId: `${scene.id}_wallet_decision`,
+      selection: `${scene.id}_wallet_decision`,
+      action: 'select_payment_method',
+      input: PAYMENT_METHOD_INPUT[choiceKey] || choiceKey,
+      outcome: isOptimal ? 'CORRECT' : 'INCORRECT',
+      isHint: false,
+      hintLevel: sceneState.hintLevel,
+      kcId: 'KC_evaluate_situational_payment_risk',
+      feedbackOrBugTag: s3Tags[choiceKey] || (isOptimal ? 'affirm_carlos_optimal_choice' : `bug_${choiceObj.misconception || 'situational_risk'}`)
+    });
+
+    if (openedRemediation) {
+      syncActiveAssessmentContext('learner_misconception_trigger');
     }
 
     saveState();
@@ -1796,6 +2051,10 @@
     const qf = REMEDIATION_QUICK_FIXES[rem.type];
     const optObj = qf.options.find((o) => o.key === optKey);
     if (!optObj) return;
+    if (rem.solved && rem.selectedOpt === optKey) return;
+
+    const scene = CARLOS_SCENES[state.section3.sceneIndex];
+    syncActiveAssessmentContext('quickfix_open');
 
     state.attempts += 1;
     rem.selectedOpt = optKey;
@@ -1803,6 +2062,25 @@
       rem.solved = true;
       state.remediationsCompleted[rem.type] = true;
     }
+
+    const qfMeta = (QUICKFIX_TELEMETRY[rem.type] && QUICKFIX_TELEMETRY[rem.type][optKey]) || {
+      input: optKey,
+      tag: optObj.ok ? 'affirm_quickfix_mastered' : `bug_quickfix_${rem.type}`
+    };
+
+    emitTelemetryTransaction({
+      problemId: `s3_carlos_${scene.id}`,
+      stepId: `${scene.id}_quickfix_remediation`,
+      selection: `${scene.id}_quickfix_remediation`,
+      action: 'select_quickfix_option',
+      input: qfMeta.input,
+      outcome: optObj.ok ? 'CORRECT' : 'INCORRECT',
+      isHint: false,
+      hintLevel: 0,
+      kcId: 'KC_remediate_payment_contrast',
+      feedbackOrBugTag: qfMeta.tag
+    });
+
     saveState();
     renderActiveSection();
   }
@@ -1812,6 +2090,9 @@
     const moveState = state.section4.moves[move.id];
     const fb = move.feedback[bucketKey];
     if (!fb) return;
+    if (moveState.solved && moveState.selected === bucketKey) return;
+
+    syncActiveAssessmentContext('move_load');
 
     state.attempts += 1;
     moveState.selected = bucketKey;
@@ -1823,6 +2104,20 @@
     } else if (fb.misconception) {
       state.misconceptions[fb.misconception] += 1;
     }
+
+    const s4Tags = SECTION4_TELEMETRY[move.id] || {};
+    emitTelemetryTransaction({
+      problemId: `s4_maya_${move.id}`,
+      stepId: `${move.id}_faded_transfer`,
+      selection: `${move.id}_faded_transfer`,
+      action: 'select_payment_method',
+      input: PAYMENT_METHOD_INPUT[bucketKey] || bucketKey,
+      outcome: fb.ok ? 'CORRECT' : 'INCORRECT',
+      isHint: false,
+      hintLevel: moveState.hintLevel,
+      kcId: 'KC_transfer_autonomous_payment_choice',
+      feedbackOrBugTag: s4Tags[bucketKey] || (fb.ok ? 'affirm_faded_transfer_mastered' : `bug_${fb.misconception || 'transfer_error'}`)
+    });
 
     saveState();
     renderActiveSection();
@@ -1851,6 +2146,7 @@
     };
     saveState();
     renderActiveSection();
+    syncActiveAssessmentContext('instructor_preview_quickfix');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -1870,7 +2166,7 @@
         return;
       }
 
-      // LXD Drawer controls
+      // LXD Drawer controls (strictly passive — never logged as transactions)
       if (target.closest('#btn-open-lxd')) {
         if (lxdDrawerOpen) closeLxdDrawer();
         else openLxdDrawer();
@@ -1911,14 +2207,18 @@
       }
       if (target.closest('#btn-reset-course')) {
         state = createFreshState();
+        lastLoggedContextKey = '';
         saveState();
+        if (window.TOLTelemetry && typeof window.TOLTelemetry.resetSession === 'function') {
+          window.TOLTelemetry.resetSession();
+        }
         closeLxdDrawer();
         renderActiveSection();
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
 
-      // Section 1 interactions
+      // Section 1 interactions (passive Pre-Training — zero transaction logging)
       const tabBtn = target.closest('[data-tab-key]');
       if (tabBtn) {
         const key = tabBtn.getAttribute('data-tab-key');
@@ -1961,6 +2261,7 @@
         state.section2.currentIndex = Number(s2Dot.getAttribute('data-s2-jump'));
         saveState();
         renderActiveSection();
+        syncActiveAssessmentContext('card_switch');
         return;
       }
 
@@ -1974,8 +2275,22 @@
         const sc = SORTING_SCENARIOS[state.section2.currentIndex];
         const cState = state.section2.cards[sc.id];
         if (cState.hintLevel < 3) {
+          syncActiveAssessmentContext('card_load');
           cState.hintLevel += 1;
           state.hintsUsed += 1;
+          const spec = SECTION2_TELEMETRY[sc.id];
+          emitTelemetryTransaction({
+            problemId: `s2_match_${sc.id}`,
+            stepId: `${sc.id}_payment_bucket`,
+            selection: `${sc.id}_hint_button`,
+            action: 'request_hint',
+            input: `hint_level_${cState.hintLevel}`,
+            outcome: 'HINT',
+            isHint: true,
+            hintLevel: cState.hintLevel,
+            kcId: spec ? spec.kcId : 'KC_classify_payment_mechanics',
+            feedbackOrBugTag: `scaffold_graduated_hint_L${cState.hintLevel}`
+          });
           saveState();
           renderActiveSection();
         }
@@ -1987,6 +2302,7 @@
           state.section2.currentIndex += 1;
           saveState();
           renderActiveSection();
+          syncActiveAssessmentContext('next_card');
         }
         return;
       }
@@ -2004,6 +2320,7 @@
         state.section3.activeRemediation = null;
         saveState();
         renderActiveSection();
+        syncActiveAssessmentContext('scene_switch');
         return;
       }
 
@@ -2025,6 +2342,7 @@
         state.section3.activeRemediation = null;
         saveState();
         renderActiveSection();
+        syncActiveAssessmentContext('post_quickfix_revision');
         return;
       }
 
@@ -2032,8 +2350,21 @@
         const sc = CARLOS_SCENES[state.section3.sceneIndex];
         const sState = state.section3.scenes[sc.id];
         if (sState.hintLevel < 3) {
+          syncActiveAssessmentContext('scene_load');
           sState.hintLevel += 1;
           state.hintsUsed += 1;
+          emitTelemetryTransaction({
+            problemId: `s3_carlos_${sc.id}`,
+            stepId: `${sc.id}_wallet_decision`,
+            selection: `${sc.id}_hint_button`,
+            action: 'request_hint',
+            input: `hint_level_${sState.hintLevel}`,
+            outcome: 'HINT',
+            isHint: true,
+            hintLevel: sState.hintLevel,
+            kcId: 'KC_evaluate_situational_payment_risk',
+            feedbackOrBugTag: `scaffold_graduated_hint_L${sState.hintLevel}`
+          });
           saveState();
           renderActiveSection();
         }
@@ -2046,6 +2377,7 @@
           state.section3.activeRemediation = null;
           saveState();
           renderActiveSection();
+          syncActiveAssessmentContext('next_scene');
         }
         return;
       }
@@ -2062,6 +2394,7 @@
         state.section4.moveIndex = Number(s4Dot.getAttribute('data-s4-jump'));
         saveState();
         renderActiveSection();
+        syncActiveAssessmentContext('move_switch');
         return;
       }
 
@@ -2075,9 +2408,22 @@
         const mv = MAYA_MOVES[state.section4.moveIndex];
         const mState = state.section4.moves[mv.id];
         if (mState.hintLevel < 3) {
+          syncActiveAssessmentContext('move_load');
           mState.hintLevel += 1;
           state.hintsUsed += 1;
           state.section4.fadedHintsUsed += 1;
+          emitTelemetryTransaction({
+            problemId: `s4_maya_${mv.id}`,
+            stepId: `${mv.id}_faded_transfer`,
+            selection: `${mv.id}_faded_hint_button`,
+            action: 'request_hint',
+            input: `hint_level_${mState.hintLevel}`,
+            outcome: 'HINT',
+            isHint: true,
+            hintLevel: mState.hintLevel,
+            kcId: 'KC_transfer_autonomous_payment_choice',
+            feedbackOrBugTag: `scaffold_faded_optional_hint_L${mState.hintLevel}`
+          });
           saveState();
           renderActiveSection();
         }
@@ -2089,6 +2435,7 @@
           state.section4.moveIndex += 1;
           saveState();
           renderActiveSection();
+          syncActiveAssessmentContext('next_move');
         }
         return;
       }
@@ -2111,7 +2458,21 @@
      ------------------------------------------------------------------------ */
 
   document.addEventListener('DOMContentLoaded', () => {
+    if (window.TOLTelemetry && typeof window.TOLTelemetry.init === 'function') {
+      window.TOLTelemetry.init({
+        toolName: 'tol-vibe-payment-methods',
+        mountInto: '#instructor-controls-dock',
+        insertBeforeSelector: '#btn-open-lxd',
+        onNewPeerSession: () => {
+          state = createFreshState();
+          lastLoggedContextKey = '';
+          saveState();
+          renderActiveSection();
+        }
+      });
+    }
     bindEvents();
     renderActiveSection();
+    syncActiveAssessmentContext('session_restore');
   });
 })();
