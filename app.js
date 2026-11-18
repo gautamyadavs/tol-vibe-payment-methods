@@ -73,21 +73,21 @@
   const PSYCHOLOGY_CARDS = [
     {
       key: 'pain',
-      icon: '🧠',
+      icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF631E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
       title: 'Pain of Paying',
       teaser: 'Why watching cash leave checking right now changes what you toss in your cart.',
       explanation: 'Seeing $65 leave your checking balance right away creates a healthy mental pause before impulse buys. When you already have cash set aside for essentials like groceries, that immediate feedback helps you stick to your budget.'
     },
     {
       key: 'deferred',
-      icon: '⏳',
+      icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF631E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
       title: 'Deferred Payment',
       teaser: 'How “pay next month” can protect your bill cushion—or quietly snowball.',
       explanation: 'Credit cards separate buying today from paying on your statement date, which can protect checking cash right before an automatic bill hits. Because your bank balance does not drop right away, though, small impulse swipes can sneak up fast.'
     },
     {
       key: 'awareness',
-      icon: '🎯',
+      icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF631E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
       title: 'Spending Awareness',
       teaser: 'Why chasing 2% cashback points on group tabs often backfires.',
       explanation: 'Putting a whole $100 group dinner on credit just to earn $2 in reward points blurs what you actually spent. If even one busy friend forgets to Venmo you back $25, you lose way more than the points were worth.'
@@ -95,9 +95,24 @@
   ];
 
   const BUCKET_OPTIONS = [
-    { key: 'debit', icon: '🏧', title: 'Debit Card', sub: 'Pulls from checking now' },
-    { key: 'credit', icon: '💳', title: 'Credit Card', sub: 'Billed later · Fraud shield' },
-    { key: 'mobile', icon: '📲', title: 'Mobile Payment', sub: 'Instant P2P app split' }
+    {
+      key: 'debit',
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF631E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>',
+      title: 'Debit Card',
+      sub: 'Pulls from checking now'
+    },
+    {
+      key: 'credit',
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF631E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><path d="M7 15h3"/></svg>',
+      title: 'Credit Card',
+      sub: 'Billed later · Fraud shield'
+    },
+    {
+      key: 'mobile',
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF631E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/><path d="M9 9h6M13 7l2 2-2 2"/></svg>',
+      title: 'Mobile Payment',
+      sub: 'Instant P2P app split'
+    }
   ];
 
   const SORTING_SCENARIOS = [
